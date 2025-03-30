@@ -10,7 +10,8 @@ import {
   ArrowDown,
   AlertCircle,
   CheckCircle2,
-  Clock
+  Clock,
+  Users
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";

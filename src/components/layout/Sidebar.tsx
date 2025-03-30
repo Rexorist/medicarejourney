@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Activity, Search, Calendar, Users, PlusCircle, Home, Pills, MessageSquare, Menu, X } from "lucide-react";
+import { Activity, Search, Calendar, Users, PlusCircle, Home, Pill, MessageSquare, Menu, X } from "lucide-react";
 
 interface NavItemProps {
   icon: React.ReactNode;
@@ -44,7 +44,7 @@ export function Sidebar() {
     { icon: <Search size={20} />, label: "Find Doctors", href: "/find-doctors" },
     { icon: <MessageSquare size={20} />, label: "Consultations", href: "/consultations" },
     { icon: <Users size={20} />, label: "Family Health", href: "/family-health" },
-    { icon: <Pills size={20} />, label: "Medications", href: "/medications" },
+    { icon: <Pill size={20} />, label: "Medications", href: "/medications" },
   ];
 
   return (
