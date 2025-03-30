@@ -1,4 +1,4 @@
-
+import { useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { 
   Card, 
@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Heart, Plus, History, LineChart, FileText } from "lucide-react";
+import { Calendar, Heart, History, LineChart, FileText, Plus } from "lucide-react";
 import {
   CartesianGrid,
   Line,
@@ -19,6 +19,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { AddReadingDialog } from "@/components/medical-history/AddReadingDialog";
+import { useToast } from "@/hooks/use-toast";
 
 const bloodPressureData = [
   { date: "Jan", systolic: 120, diastolic: 80 },
@@ -39,6 +41,25 @@ const bloodSugarData = [
 ];
 
 export default function MedicalHistory() {
+  const { toast } = useToast();
+  const [bloodPressureData, setBloodPressureData] = useState([
+    { date: "Jan", systolic: 120, diastolic: 80 },
+    { date: "Feb", systolic: 124, diastolic: 82 },
+    { date: "Mar", systolic: 119, diastolic: 79 },
+    { date: "Apr", systolic: 122, diastolic: 81 },
+    { date: "May", systolic: 118, diastolic: 78 },
+    { date: "Jun", systolic: 121, diastolic: 80 },
+  ]);
+  
+  const [bloodSugarData, setBloodSugarData] = useState([
+    { date: "Jan", level: 95 },
+    { date: "Feb", level: 100 },
+    { date: "Mar", level: 98 },
+    { date: "Apr", level: 105 },
+    { date: "May", level: 99 },
+    { date: "Jun", level: 97 },
+  ]);
+
   const medicalRecords = [
     {
       id: "1",
@@ -62,6 +83,41 @@ export default function MedicalHistory() {
       notes: "Slight astigmatism. New prescription provided for glasses."
     }
   ];
+
+  const handleAddReading = (data: any) => {
+    const { type, date, values } = data;
+    const monthName = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(date);
+    
+    if (type === "blood-pressure") {
+      setBloodPressureData(prev => [
+        ...prev, 
+        { 
+          date: monthName, 
+          systolic: Number(values.systolic), 
+          diastolic: Number(values.diastolic) 
+        }
+      ]);
+      
+      toast({
+        title: "Blood Pressure Reading Added",
+        description: `Added ${values.systolic}/${values.diastolic} mmHg for ${monthName}`,
+      });
+    } 
+    else if (type === "blood-sugar") {
+      setBloodSugarData(prev => [
+        ...prev, 
+        { 
+          date: monthName, 
+          level: Number(values.level) 
+        }
+      ]);
+      
+      toast({
+        title: "Blood Sugar Reading Added",
+        description: `Added ${values.level} mg/dL for ${monthName}`,
+      });
+    }
+  };
 
   return (
     <AppLayout>
@@ -145,10 +201,7 @@ export default function MedicalHistory() {
             </div>
             
             <div className="flex justify-center">
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Add New Reading
-              </Button>
+              <AddReadingDialog onAddReading={handleAddReading} />
             </div>
           </TabsContent>
           
