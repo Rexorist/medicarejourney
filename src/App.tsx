@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import HealthConcerns from "./pages/HealthConcerns";
 import MedicalHistory from "./pages/MedicalHistory";
+import FamilyHealth from "./pages/FamilyHealth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,6 +22,7 @@ const App = () => (
           <Route path="/" element={<Dashboard />} />
           <Route path="/health-concerns" element={<HealthConcerns />} />
           <Route path="/medical-history" element={<MedicalHistory />} />
+          <Route path="/family-health" element={<FamilyHealth />} />
           {/* Add more routes as components are built */}
           <Route path="*" element={<NotFound />} />
         </Routes>
