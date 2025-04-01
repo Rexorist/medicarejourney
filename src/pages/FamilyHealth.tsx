@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -23,7 +22,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { Users, UserPlus, Activity, Heart, Pill, LineChart as LineChartIcon } from "lucide-react";
+import { Users, UserPlus, Activity, Heart, Pill, LineChart as LineChartIcon, Calendar } from "lucide-react";
 import { FamilyMember, FamilyMemberCard } from "@/components/family/FamilyMemberCard";
 import { AddFamilyMemberDialog } from "@/components/family/AddFamilyMemberDialog";
 import { useToast } from "@/hooks/use-toast";

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,9 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Edit, Heart, Activity, PulseIcon } from "lucide-react";
+import { Edit, Heart, Activity, Pulse } from "lucide-react";
 
-// Define the types for readings
 type Reading = {
   value: string;
   status: "normal" | "warning" | "critical";
@@ -165,7 +163,7 @@ export const FamilyMemberCard = ({ member, onUpdateReading }: FamilyMemberCardPr
           
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <PulseIcon className="h-4 w-4 text-blue-500" />
+              <Pulse className="h-4 w-4 text-blue-500" />
               <span className="text-sm">Heart Rate:</span>
             </div>
             <div className="flex items-center gap-1">
