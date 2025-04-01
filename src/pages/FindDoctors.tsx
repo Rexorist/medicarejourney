@@ -1,10 +1,24 @@
 
 import { AppLayout } from "@/components/layout/AppLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { MapPin, Phone, Calendar, Star } from "lucide-react";
+import { MapPin, Phone, Calendar, Star, Clock, Heart, Filter } from "lucide-react";
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { useToast } from "@/hooks/use-toast";
 
 interface Doctor {
   id: string;
@@ -15,128 +29,328 @@ interface Doctor {
   phone: string;
   rating: number;
   availableDate: string;
+  timings?: string;
+  availableSlots?: string[];
+  insuranceAccepted?: string[];
 }
 
 export default function FindDoctors() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [specialty, setSpecialty] = useState<string>("all");
+  const [availability, setAvailability] = useState<string>("all");
+  const [maxDistance, setMaxDistance] = useState<string>("all");
+  const { toast } = useToast();
+  
   const [doctors, setDoctors] = useState<Doctor[]>([
     {
       id: "1",
       name: "Dr. Emily Wilson",
       specialty: "Cardiologist",
       address: "123 Medical Center Dr, City Name",
-      distance: "1.2 miles",
+      distance: "1.2",
       phone: "(555) 123-4567",
       rating: 4.8,
-      availableDate: "Next available: Tomorrow"
+      availableDate: "Tomorrow",
+      timings: "9:00 AM - 5:00 PM",
+      availableSlots: ["10:30 AM", "2:15 PM", "4:00 PM"],
+      insuranceAccepted: ["BlueCross", "Aetna", "Medicare"]
     },
     {
       id: "2",
       name: "Dr. James Thompson",
       specialty: "Family Medicine",
       address: "456 Health Blvd, City Name",
-      distance: "0.8 miles",
+      distance: "0.8",
       phone: "(555) 987-6543",
       rating: 4.6,
-      availableDate: "Next available: Today"
+      availableDate: "Today",
+      timings: "8:00 AM - 4:00 PM",
+      availableSlots: ["9:15 AM", "11:00 AM", "3:30 PM"],
+      insuranceAccepted: ["UnitedHealth", "Cigna", "Medicare"]
     },
     {
       id: "3",
       name: "Dr. Maria Gonzalez",
       specialty: "Neurologist",
       address: "789 Wellness Ave, City Name",
-      distance: "2.3 miles",
+      distance: "2.3",
       phone: "(555) 456-7890",
       rating: 4.9,
-      availableDate: "Next available: May 5"
+      availableDate: "May 5",
+      timings: "10:00 AM - 6:00 PM",
+      availableSlots: ["10:30 AM", "1:45 PM", "5:15 PM"],
+      insuranceAccepted: ["Aetna", "Cigna", "Humana"]
     },
     {
       id: "4",
       name: "Dr. Robert Chang",
       specialty: "Dermatologist",
       address: "234 Healthcare Pkwy, City Name",
-      distance: "3.1 miles",
+      distance: "3.1",
       phone: "(555) 234-5678",
       rating: 4.7,
-      availableDate: "Next available: May 3"
+      availableDate: "May 3",
+      timings: "9:00 AM - 5:00 PM",
+      availableSlots: ["11:30 AM", "2:00 PM", "4:00 PM"],
+      insuranceAccepted: ["BlueCross", "UnitedHealth", "Medicare"]
+    },
+    {
+      id: "5",
+      name: "Dr. Sarah Peterson",
+      specialty: "Pediatrician",
+      address: "567 Children's Health Blvd, City Name",
+      distance: "1.5",
+      phone: "(555) 789-0123",
+      rating: 4.9,
+      availableDate: "Today",
+      timings: "8:30 AM - 4:30 PM",
+      availableSlots: ["9:00 AM", "11:30 AM", "2:00 PM", "3:45 PM"],
+      insuranceAccepted: ["BlueCross", "Aetna", "UnitedHealth"]
+    },
+    {
+      id: "6",
+      name: "Dr. David Kim",
+      specialty: "Orthopedic Surgeon",
+      address: "890 Bone & Joint Way, City Name",
+      distance: "2.7",
+      phone: "(555) 321-6547",
+      rating: 4.8,
+      availableDate: "May 4",
+      timings: "9:00 AM - 5:00 PM",
+      availableSlots: ["10:15 AM", "1:30 PM", "3:45 PM"],
+      insuranceAccepted: ["Medicare", "BlueCross", "Cigna"]
+    },
+    {
+      id: "7",
+      name: "Dr. Jennifer Adams",
+      specialty: "OB/GYN",
+      address: "123 Women's Health Center, City Name",
+      distance: "1.9",
+      phone: "(555) 987-1234",
+      rating: 4.8,
+      availableDate: "Tomorrow",
+      timings: "8:00 AM - 4:00 PM",
+      availableSlots: ["8:30 AM", "10:45 AM", "2:15 PM"],
+      insuranceAccepted: ["Aetna", "UnitedHealth", "Humana"]
+    },
+    {
+      id: "8",
+      name: "Dr. Michael Rodriguez",
+      specialty: "Family Medicine",
+      address: "456 Primary Care Ave, City Name",
+      distance: "0.5",
+      phone: "(555) 456-7890",
+      rating: 4.7,
+      availableDate: "Today",
+      timings: "9:00 AM - 6:00 PM",
+      availableSlots: ["9:30 AM", "11:45 AM", "4:30 PM"],
+      insuranceAccepted: ["Medicare", "Humana", "BlueCross"]
     }
   ]);
 
-  // Filter doctors based on search query
-  const filteredDoctors = searchQuery.trim() === "" 
-    ? doctors 
-    : doctors.filter(doctor => 
-        doctor.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        doctor.specialty.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+  // Get unique specialties
+  const specialties = Array.from(new Set(doctors.map(doctor => doctor.specialty)));
+  
+  // Filter doctors based on search query, specialty, and availability
+  const filteredDoctors = doctors.filter(doctor => {
+    // Filter by search query
+    const matchesSearch = searchQuery.trim() === "" || 
+      doctor.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      doctor.specialty.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Filter by specialty
+    const matchesSpecialty = specialty === "all" || doctor.specialty === specialty;
+    
+    // Filter by availability
+    const matchesAvailability = availability === "all" || 
+      (availability === "today" && doctor.availableDate === "Today") ||
+      (availability === "tomorrow" && doctor.availableDate === "Tomorrow") ||
+      (availability === "this-week" && ["Today", "Tomorrow", "May 3", "May 4", "May 5"].includes(doctor.availableDate));
+    
+    // Filter by distance
+    const matchesDistance = maxDistance === "all" || 
+      (maxDistance === "1" && parseFloat(doctor.distance) <= 1) ||
+      (maxDistance === "3" && parseFloat(doctor.distance) <= 3) ||
+      (maxDistance === "5" && parseFloat(doctor.distance) <= 5);
+    
+    return matchesSearch && matchesSpecialty && matchesAvailability && matchesDistance;
+  });
 
-  const handleScheduleAppointment = (doctorId: string) => {
-    console.log(`Schedule appointment with doctor ${doctorId}`);
+  // Sort doctors by distance (closest first)
+  const sortedDoctors = [...filteredDoctors].sort((a, b) => 
+    parseFloat(a.distance) - parseFloat(b.distance)
+  );
+
+  const handleScheduleAppointment = (doctor: Doctor, slot: string) => {
+    toast({
+      title: "Appointment Scheduled",
+      description: `Your appointment with ${doctor.name} at ${slot} has been scheduled. We'll send you a confirmation email shortly.`,
+    });
+  };
+  
+  const handleSaveDoctor = (doctorId: string) => {
+    toast({
+      title: "Doctor Saved",
+      description: "This doctor has been added to your favorites list.",
+    });
   };
 
   return (
     <AppLayout>
-      <div className="container mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Find Doctors Near You</h1>
-        
-        <div className="mb-6">
-          <Input
-            type="text"
-            placeholder="Search by doctor name or specialty..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full md:w-96"
-          />
+      <div className="container mx-auto space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Find Doctors Near You</h1>
+          <p className="text-muted-foreground">
+            Discover and connect with healthcare providers in your area
+          </p>
         </div>
         
-        {filteredDoctors.length === 0 ? (
-          <Card>
-            <CardContent className="p-6 text-center">
-              <p className="text-lg text-gray-500">No doctors found matching your search</p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredDoctors.map((doctor) => (
-              <Card key={doctor.id} className="overflow-hidden">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xl">{doctor.name}</CardTitle>
-                  <p className="text-medical-blue font-medium">{doctor.specialty}</p>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-3 mb-4">
-                    <div className="flex items-start gap-2">
-                      <MapPin className="h-5 w-5 text-gray-500 shrink-0 mt-0.5" />
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle>Search and Filter</CardTitle>
+            <CardDescription>Find the right doctor for your needs</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-4">
+              <div className="md:col-span-2">
+                <Input
+                  type="text"
+                  placeholder="Search by doctor name or specialty..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              
+              <Select value={specialty} onValueChange={setSpecialty}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Specialty" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Specialties</SelectItem>
+                  {specialties.map((spec) => (
+                    <SelectItem key={spec} value={spec}>{spec}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <Select value={availability} onValueChange={setAvailability}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Availability" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Any Time</SelectItem>
+                  <SelectItem value="today">Today</SelectItem>
+                  <SelectItem value="tomorrow">Tomorrow</SelectItem>
+                  <SelectItem value="this-week">This Week</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Select value={maxDistance} onValueChange={setMaxDistance}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Distance" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Any Distance</SelectItem>
+                  <SelectItem value="1">Within 1 mile</SelectItem>
+                  <SelectItem value="3">Within 3 miles</SelectItem>
+                  <SelectItem value="5">Within 5 miles</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="mt-4">
+          <h2 className="text-lg font-medium mb-2">
+            {sortedDoctors.length} {sortedDoctors.length === 1 ? 'Doctor' : 'Doctors'} Found
+          </h2>
+          
+          {sortedDoctors.length === 0 ? (
+            <Card>
+              <CardContent className="p-6 text-center">
+                <p className="text-lg text-gray-500">No doctors found matching your search criteria</p>
+                <Button className="mt-4" onClick={() => {
+                  setSearchQuery("");
+                  setSpecialty("all");
+                  setAvailability("all");
+                  setMaxDistance("all");
+                }}>Clear Filters</Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {sortedDoctors.map((doctor) => (
+                <Card key={doctor.id} className="overflow-hidden">
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-start">
                       <div>
-                        <div>{doctor.address}</div>
-                        <div className="text-sm text-gray-500">{doctor.distance}</div>
+                        <CardTitle className="text-xl">{doctor.name}</CardTitle>
+                        <p className="text-medical-blue font-medium">{doctor.specialty}</p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleSaveDoctor(doctor.id)}
+                        className="text-gray-400 hover:text-red-500"
+                      >
+                        <Heart className="h-5 w-5" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-3 mb-4">
+                      <div className="flex items-start gap-2">
+                        <MapPin className="h-5 w-5 text-gray-500 shrink-0 mt-0.5" />
+                        <div>
+                          <div>{doctor.address}</div>
+                          <div className="text-sm text-gray-500">{doctor.distance} miles away</div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Phone className="h-5 w-5 text-gray-500" />
+                        <span>{doctor.phone}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-5 w-5 text-gray-500" />
+                        <span>{doctor.timings}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-5 w-5 text-gray-500" />
+                        <span className="text-green-600 font-medium">Next available: {doctor.availableDate}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Star className="h-5 w-5 text-amber-400" />
+                        <span>{doctor.rating.toFixed(1)}</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Phone className="h-5 w-5 text-gray-500" />
-                      <span>{doctor.phone}</span>
+                    
+                    <div>
+                      <h4 className="text-sm font-medium mb-2">Available Time Slots:</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {doctor.availableSlots?.map((slot, index) => (
+                          <Badge 
+                            key={index}
+                            variant="outline" 
+                            className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                            onClick={() => handleScheduleAppointment(doctor, slot)}
+                          >
+                            {slot}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-5 w-5 text-gray-500" />
-                      <span className="text-green-600 font-medium">{doctor.availableDate}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Star className="h-5 w-5 text-amber-400" />
-                      <span>{doctor.rating.toFixed(1)}</span>
-                    </div>
-                  </div>
-                  
-                  <Button 
-                    className="w-full"
-                    onClick={() => handleScheduleAppointment(doctor.id)}
-                  >
-                    Schedule Appointment
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+                  </CardContent>
+                  <CardFooter>
+                    <Button className="w-full" onClick={() => handleScheduleAppointment(doctor, doctor.availableSlots?.[0] || "")}>
+                      Schedule Appointment
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </AppLayout>
   );

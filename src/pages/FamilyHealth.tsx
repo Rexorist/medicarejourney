@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -22,13 +23,30 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { Users, UserPlus, Activity, Heart, Pill, LineChart as LineChartIcon, Calendar } from "lucide-react";
+import { Users, UserPlus, Activity, Heart, Pill, LineChart as LineChartIcon, Calendar, Bell, Check, Clock } from "lucide-react";
 import { FamilyMember, FamilyMemberCard } from "@/components/family/FamilyMemberCard";
 import { AddFamilyMemberDialog } from "@/components/family/AddFamilyMemberDialog";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
-// Sample data for the family members
-const initialFamilyMembers: FamilyMember[] = [
+// Enhanced family member interface with medication tracking
+interface EnhancedFamilyMember extends FamilyMember {
+  medications?: {
+    id: string;
+    name: string;
+    dosage: string;
+    schedule: string;
+    lastTaken?: string;
+    nextDue?: string;
+    status: 'taken' | 'missed' | 'upcoming';
+  }[];
+  isGuardian?: boolean;
+}
+
+// Sample data for the family members with medication tracking
+const initialFamilyMembers: EnhancedFamilyMember[] = [
   {
     id: "1",
     name: "John Doe",
@@ -42,7 +60,28 @@ const initialFamilyMembers: FamilyMember[] = [
       bloodPressure: { value: "120/80", status: "normal", date: "May 1, 2024" },
       bloodSugar: { value: "95", status: "normal", date: "May 1, 2024" },
       heartRate: { value: "72", status: "normal", date: "May 1, 2024" }
-    }
+    },
+    isGuardian: true,
+    medications: [
+      {
+        id: "m1",
+        name: "Lisinopril",
+        dosage: "10mg",
+        schedule: "Once daily (morning)",
+        lastTaken: "Today, 8:15 AM",
+        nextDue: "Tomorrow, 8:00 AM",
+        status: "taken"
+      },
+      {
+        id: "m2",
+        name: "Atorvastatin",
+        dosage: "20mg",
+        schedule: "Once daily (bedtime)",
+        lastTaken: "Yesterday, 9:30 PM",
+        nextDue: "Today, 9:00 PM",
+        status: "upcoming"
+      }
+    ]
   },
   {
     id: "2",
@@ -57,7 +96,27 @@ const initialFamilyMembers: FamilyMember[] = [
       bloodPressure: { value: "118/78", status: "normal", date: "Apr 25, 2024" },
       bloodSugar: { value: "92", status: "normal", date: "Apr 25, 2024" },
       heartRate: { value: "68", status: "normal", date: "Apr 25, 2024" }
-    }
+    },
+    medications: [
+      {
+        id: "m3",
+        name: "Vitamin D",
+        dosage: "2000 IU",
+        schedule: "Once daily",
+        lastTaken: "Today, 7:45 AM",
+        nextDue: "Tomorrow, 8:00 AM",
+        status: "taken"
+      },
+      {
+        id: "m4",
+        name: "Iron Supplement",
+        dosage: "65mg",
+        schedule: "Once daily with food",
+        lastTaken: "Yesterday, 12:30 PM",
+        nextDue: "Today, 12:00 PM",
+        status: "missed"
+      }
+    ]
   },
   {
     id: "3",
@@ -72,7 +131,27 @@ const initialFamilyMembers: FamilyMember[] = [
       bloodPressure: { value: "90/60", status: "normal", date: "Apr 15, 2024" },
       bloodSugar: { value: "80", status: "normal", date: "Apr 15, 2024" },
       heartRate: { value: "85", status: "normal", date: "Apr 15, 2024" }
-    }
+    },
+    medications: [
+      {
+        id: "m5",
+        name: "Children's Multivitamin",
+        dosage: "1 tablet",
+        schedule: "Once daily (morning)",
+        lastTaken: "Today, 7:30 AM",
+        nextDue: "Tomorrow, 7:30 AM",
+        status: "taken"
+      },
+      {
+        id: "m6",
+        name: "Allergy Medicine",
+        dosage: "5ml",
+        schedule: "Twice daily",
+        lastTaken: "Today, 8:00 AM",
+        nextDue: "Today, 8:00 PM",
+        status: "upcoming"
+      }
+    ]
   }
 ];
 
@@ -122,20 +201,28 @@ const healthAlerts = [
   {
     memberId: "2",
     memberName: "Jane Doe",
-    alertType: "Health Reading",
-    message: "Last blood pressure reading slightly elevated. Consider follow-up.",
-    date: "Apr 28, 2024",
+    alertType: "Medication",
+    message: "Iron supplement dose missed today. Please take as soon as possible.",
+    date: "Today",
     urgent: true
   }
 ];
 
 export default function FamilyHealth() {
   const { toast } = useToast();
-  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>(initialFamilyMembers);
+  const [familyMembers, setFamilyMembers] = useState<EnhancedFamilyMember[]>(initialFamilyMembers);
   const [selectedChart, setSelectedChart] = useState("bloodPressure");
+  const [guardianMode, setGuardianMode] = useState(true);
+  const [showMedicationReminders, setShowMedicationReminders] = useState(true);
+  
+  const guardian = familyMembers.find(member => member.isGuardian);
   
   const handleAddFamilyMember = (newMember: FamilyMember) => {
-    setFamilyMembers([...familyMembers, newMember]);
+    const enhancedMember: EnhancedFamilyMember = {
+      ...newMember,
+      medications: []
+    };
+    setFamilyMembers([...familyMembers, enhancedMember]);
     toast({
       title: "Family Member Added",
       description: `${newMember.name} has been added to your family dashboard.`,
@@ -167,18 +254,209 @@ export default function FamilyHealth() {
     });
   };
 
+  const handleMarkMedicationTaken = (memberId: string, medicationId: string) => {
+    const updatedMembers = familyMembers.map(member => {
+      if (member.id === memberId && member.medications) {
+        const updatedMedications = member.medications.map(med => {
+          if (med.id === medicationId) {
+            return {
+              ...med,
+              status: "taken" as const,
+              lastTaken: `Today, ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+              nextDue: "Tomorrow, " + med.schedule.split(" ").pop()
+            };
+          }
+          return med;
+        });
+        
+        return {
+          ...member,
+          medications: updatedMedications
+        };
+      }
+      return member;
+    });
+    
+    setFamilyMembers(updatedMembers);
+    
+    toast({
+      title: "Medication Taken",
+      description: "Medication has been marked as taken.",
+    });
+  };
+  
+  const handleSendReminder = (memberId: string, medicationId: string) => {
+    const member = familyMembers.find(m => m.id === memberId);
+    const medication = member?.medications?.find(med => med.id === medicationId);
+    
+    if (member && medication) {
+      toast({
+        title: "Reminder Sent",
+        description: `A reminder to take ${medication.name} has been sent to ${member.name}.`,
+      });
+    }
+  };
+
+  // Count up medication status for all family members
+  const medicationSummary = {
+    taken: 0,
+    missed: 0,
+    upcoming: 0,
+    total: 0
+  };
+  
+  familyMembers.forEach(member => {
+    member.medications?.forEach(med => {
+      medicationSummary.total++;
+      medicationSummary[med.status]++;
+    });
+  });
+
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Users className="h-8 w-8 text-medical-blue" />
-            Family Health Dashboard
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Track and manage health information for your entire family
-          </p>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold flex items-center gap-2">
+              <Users className="h-8 w-8 text-medical-blue" />
+              Family Health Dashboard
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Track and manage health information for your entire family
+            </p>
+          </div>
+          
+          {guardian && (
+            <div className="flex items-center space-x-4 p-3 rounded-lg bg-slate-50">
+              <div className="flex flex-col space-y-1">
+                <h3 className="font-medium">Guardian Mode</h3>
+                <p className="text-sm text-muted-foreground">Monitor your family's medication adherence</p>
+              </div>
+              <Switch 
+                id="guardian-mode" 
+                checked={guardianMode} 
+                onCheckedChange={setGuardianMode}
+              />
+            </div>
+          )}
         </div>
+        
+        {guardianMode && guardian && (
+          <Card className="border-medical-blue/30 bg-blue-50/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-medical-blue" />
+                Guardian Dashboard
+              </CardTitle>
+              <CardDescription>
+                Monitor medication adherence for all family members
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="text-4xl font-bold">{medicationSummary.total}</div>
+                      <p className="text-sm text-muted-foreground mt-1">Total Medications</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-green-50">
+                    <CardContent className="pt-6">
+                      <div className="text-4xl font-bold text-green-600">{medicationSummary.taken}</div>
+                      <p className="text-sm text-green-600/70 mt-1">Taken Today</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-amber-50">
+                    <CardContent className="pt-6">
+                      <div className="text-4xl font-bold text-amber-600">{medicationSummary.upcoming}</div>
+                      <p className="text-sm text-amber-600/70 mt-1">Upcoming Today</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-red-50">
+                    <CardContent className="pt-6">
+                      <div className="text-4xl font-bold text-red-600">{medicationSummary.missed}</div>
+                      <p className="text-sm text-red-600/70 mt-1">Missed Doses</p>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                <div>
+                  <h3 className="font-medium mb-3">Family Medication Tracker</h3>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Family Member</TableHead>
+                        <TableHead>Medication</TableHead>
+                        <TableHead>Dosage</TableHead>
+                        <TableHead>Schedule</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Last Taken</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {familyMembers.filter(member => member.id !== guardian.id).map(member => 
+                        member.medications?.map(medication => (
+                          <TableRow key={`${member.id}-${medication.id}`}>
+                            <TableCell>{member.name}</TableCell>
+                            <TableCell>{medication.name}</TableCell>
+                            <TableCell>{medication.dosage}</TableCell>
+                            <TableCell>{medication.schedule}</TableCell>
+                            <TableCell>
+                              <Badge variant={
+                                medication.status === "taken" ? "default" :
+                                medication.status === "upcoming" ? "outline" : "destructive"
+                              }>
+                                {medication.status === "taken" && <Check className="h-3 w-3 mr-1" />}
+                                {medication.status === "upcoming" && <Clock className="h-3 w-3 mr-1" />}
+                                {medication.status === "missed" && <Bell className="h-3 w-3 mr-1" />}
+                                {medication.status.charAt(0).toUpperCase() + medication.status.slice(1)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>{medication.lastTaken || "Not taken yet"}</TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  onClick={() => handleMarkMedicationTaken(member.id, medication.id)}
+                                  disabled={medication.status === "taken"}
+                                >
+                                  Mark Taken
+                                </Button>
+                                <Button 
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleSendReminder(member.id, medication.id)}
+                                  disabled={medication.status === "taken"}
+                                >
+                                  Send Reminder
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+              
+              <div className="flex justify-between items-center mt-6">
+                <div className="flex items-center space-x-2">
+                  <Switch 
+                    id="medication-reminders" 
+                    checked={showMedicationReminders} 
+                    onCheckedChange={setShowMedicationReminders}
+                  />
+                  <Label htmlFor="medication-reminders">Receive notifications for missed medications</Label>
+                </div>
+                <Button>Configure Notifications</Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
         
         <div className="grid gap-6 md:grid-cols-3">
           {familyMembers.map((member) => (
@@ -327,7 +605,12 @@ export default function FamilyHealth() {
                   <TableBody>
                     {familyMembers.map((member) => (
                       <TableRow key={member.id}>
-                        <TableCell className="font-medium">{member.name}</TableCell>
+                        <TableCell className="font-medium">
+                          {member.name}
+                          {member.isGuardian && (
+                            <Badge variant="outline" className="ml-2">Guardian</Badge>
+                          )}
+                        </TableCell>
                         <TableCell>
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             member.healthStatus === "Good" 
