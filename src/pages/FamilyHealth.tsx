@@ -23,7 +23,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { Users, UserPlus, Activity, Heart, Pill, LineChart as LineChartIcon, Calendar, Bell, Check, Clock } from "lucide-react";
+import { Users, UserPlus, Activity, Heart, Pill, LineChart as LineChartIcon, Calendar, Bell, Check, Clock, Shield } from "lucide-react";
 import { FamilyMember, FamilyMemberCard } from "@/components/family/FamilyMemberCard";
 import { AddFamilyMemberDialog } from "@/components/family/AddFamilyMemberDialog";
 import { useToast } from "@/hooks/use-toast";

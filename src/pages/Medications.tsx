@@ -1,10 +1,15 @@
 
 import { AppLayout } from "@/components/layout/AppLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Clock, AlertCircle, Pill, PlusCircle } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Calendar, Clock, AlertCircle, Pill, PlusCircle, DeviceTablet, Bell, Check, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
 
 interface Medication {
   id: string;
@@ -14,6 +19,18 @@ interface Medication {
   purpose: string;
   refillDate?: string;
   instructions?: string;
+  dispenserConnected?: boolean;
+  lastDispensed?: string;
+  nextDispense?: string;
+  status?: 'taken' | 'missed' | 'upcoming';
+  guardianAlert?: boolean;
+}
+
+interface Guardian {
+  id: string;
+  name: string;
+  relationship: string;
+  phone: string;
 }
 
 export default function Medications() {
@@ -25,7 +42,12 @@ export default function Medications() {
       frequency: "Once daily",
       purpose: "Blood Pressure",
       refillDate: "May 30, 2024",
-      instructions: "Take in the morning with food"
+      instructions: "Take in the morning with food",
+      dispenserConnected: true,
+      lastDispensed: "Today, 8:15 AM",
+      nextDispense: "Tomorrow, 8:00 AM",
+      status: 'taken',
+      guardianAlert: true
     },
     {
       id: "2",
@@ -34,7 +56,12 @@ export default function Medications() {
       frequency: "Twice daily",
       purpose: "Diabetes Management",
       refillDate: "June 15, 2024",
-      instructions: "Take with meals"
+      instructions: "Take with meals",
+      dispenserConnected: true,
+      lastDispensed: "Today, 7:30 AM",
+      nextDispense: "Today, 7:30 PM",
+      status: 'upcoming',
+      guardianAlert: true
     },
     {
       id: "3",
@@ -43,9 +70,24 @@ export default function Medications() {
       frequency: "Once daily",
       purpose: "Cholesterol",
       refillDate: "June 5, 2024",
-      instructions: "Take at bedtime"
+      instructions: "Take at bedtime",
+      dispenserConnected: false,
+      guardianAlert: false
     }
   ]);
+
+  const [guardians, setGuardians] = useState<Guardian[]>([
+    {
+      id: "g1",
+      name: "Sarah Johnson",
+      relationship: "Spouse",
+      phone: "+1 (555) 123-4567"
+    }
+  ]);
+
+  const [isDispenserConnected, setIsDispenserConnected] = useState(true);
+  const [dispenserStatus, setDispenserStatus] = useState("Online");
+  const { toast } = useToast();
 
   const handleRequestRefill = (id: string) => {
     toast({
@@ -61,16 +103,215 @@ export default function Medications() {
     });
   };
 
+  const toggleDispenserConnection = () => {
+    setIsDispenserConnected(!isDispenserConnected);
+    toast({
+      title: isDispenserConnected ? "Dispenser Disconnected" : "Dispenser Connected",
+      description: isDispenserConnected 
+        ? "Your smart dispenser has been disconnected." 
+        : "Your smart dispenser is now connected and ready to use."
+    });
+    setDispenserStatus(isDispenserConnected ? "Offline" : "Online");
+  };
+
+  const handleManualDispense = (id: string) => {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    setMedications(medications.map(med => {
+      if (med.id === id) {
+        return {
+          ...med,
+          lastDispensed: `Today, ${timeString}`,
+          status: 'taken'
+        };
+      }
+      return med;
+    }));
+
+    toast({
+      title: "Medication Dispensed",
+      description: "The medication has been dispensed from your smart dispenser."
+    });
+  };
+  
+  const handleSyncDispenser = () => {
+    toast({
+      title: "Synchronizing Dispenser",
+      description: "Your medication schedule is being synchronized with the smart dispenser."
+    });
+    
+    setTimeout(() => {
+      toast({
+        title: "Synchronization Complete",
+        description: "Your smart dispenser is updated with the latest medication schedule."
+      });
+    }, 1500);
+  };
+
+  const handleTestAlert = (id: string) => {
+    toast({
+      title: "Test Alert Sent",
+      description: "A test notification has been sent to you and your guardian.",
+      variant: "destructive"
+    });
+  };
+
+  const handleToggleGuardianAlert = (id: string) => {
+    setMedications(medications.map(med => {
+      if (med.id === id) {
+        const updatedMed = {
+          ...med,
+          guardianAlert: !med.guardianAlert
+        };
+
+        if (updatedMed.guardianAlert) {
+          toast({
+            title: "Guardian Alerts Enabled",
+            description: "Your guardian will be notified if medication is not taken."
+          });
+        } else {
+          toast({
+            title: "Guardian Alerts Disabled",
+            description: "Your guardian will not receive medication alerts."
+          });
+        }
+        
+        return updatedMed;
+      }
+      return med;
+    }));
+  };
+
   return (
     <AppLayout>
-      <div className="container mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">My Medications</h1>
-          <Button onClick={handleAddMedication} className="flex items-center gap-2">
-            <PlusCircle size={16} />
-            <span>Add Medication</span>
-          </Button>
+      <div className="container mx-auto space-y-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+          <div>
+            <h1 className="text-3xl font-bold">My Medications</h1>
+            <p className="text-muted-foreground">Manage your medications and smart dispenser</p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button onClick={handleAddMedication} className="flex items-center gap-2">
+              <PlusCircle size={16} />
+              <span>Add Medication</span>
+            </Button>
+            <Button onClick={handleSyncDispenser} variant="outline" className="flex items-center gap-2">
+              <RotateCw size={16} />
+              <span>Sync Dispenser</span>
+            </Button>
+          </div>
         </div>
+        
+        {/* Smart Dispenser Status Card */}
+        <Card className={isDispenserConnected ? "border-green-200 bg-green-50/30" : "border-amber-200 bg-amber-50/30"}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <DeviceTablet className="h-5 w-5" />
+              Smart Medicine Dispenser
+              <Badge variant={isDispenserConnected ? "default" : "outline"} className="ml-2">
+                {dispenserStatus}
+              </Badge>
+            </CardTitle>
+            <CardDescription>
+              IoT-connected dispenser that provides medication according to schedule
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col md:flex-row gap-6">
+              <div className="flex-1 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      id="dispenser-connection"
+                      checked={isDispenserConnected}
+                      onCheckedChange={toggleDispenserConnection}
+                    />
+                    <Label htmlFor="dispenser-connection">
+                      {isDispenserConnected ? "Connected" : "Disconnected"}
+                    </Label>
+                  </div>
+                  {isDispenserConnected && (
+                    <Badge variant="outline" className="text-green-700 bg-green-100">
+                      Battery: 87%
+                    </Badge>
+                  )}
+                </div>
+                
+                {isDispenserConnected && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium">Next medication:</p>
+                      <p className="text-lg">Metformin, Today 7:30 PM</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">Dispenser capacity:</p>
+                      <p className="text-lg">14 slots (10 filled)</p>
+                    </div>
+                  </div>
+                )}
+                
+                {!isDispenserConnected && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Dispenser Offline</AlertTitle>
+                    <AlertDescription>
+                      Your smart dispenser is currently disconnected. Medication alerts and automatic dispensing are unavailable.
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
+              
+              <Separator orientation="vertical" className="hidden md:block h-auto" />
+              
+              <div className="flex-1">
+                <h3 className="text-sm font-medium mb-2">Guardian Notification Settings</h3>
+                {guardians.map(guardian => (
+                  <div key={guardian.id} className="flex flex-col gap-2 p-3 rounded-md bg-card">
+                    <div className="flex justify-between">
+                      <p className="font-medium">{guardian.name}</p>
+                      <Badge variant="outline">{guardian.relationship}</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{guardian.phone}</p>
+                    <div className="mt-1">
+                      <div className="flex items-center space-x-2">
+                        <Switch 
+                          id="alert-guardian" 
+                          checked={medications.some(m => m.guardianAlert)} 
+                          onCheckedChange={() => {
+                            const allEnabled = medications.every(m => m.dispenserConnected && m.guardianAlert);
+                            setMedications(medications.map(med => ({
+                              ...med, 
+                              guardianAlert: !allEnabled && med.dispenserConnected
+                            })));
+                            
+                            toast({
+                              title: allEnabled ? "Guardian Alerts Disabled" : "Guardian Alerts Enabled",
+                              description: allEnabled 
+                                ? "Your guardian will not receive medication alerts." 
+                                : "Your guardian will be notified if medication is not taken."
+                            });
+                          }}
+                        />
+                        <Label htmlFor="alert-guardian">Notify for missed medications</Label>
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="mt-2"
+                        onClick={() => handleTestAlert(guardian.id)}
+                      >
+                        Send Test Alert
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <h2 className="text-xl font-medium mt-6">Medications</h2>
         
         {medications.length === 0 ? (
           <Card>
@@ -82,11 +323,17 @@ export default function Medications() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {medications.map((medication) => (
-              <Card key={medication.id}>
+              <Card key={medication.id} className={
+                medication.status === 'missed' ? "border-red-200 shadow-sm" : 
+                medication.status === 'upcoming' ? "border-amber-200 shadow-sm" : ""
+              }>
                 <CardHeader className="pb-2">
                   <div className="flex items-center gap-2">
                     <Pill className="h-5 w-5 text-medical-blue" />
                     <CardTitle className="text-lg">{medication.name}</CardTitle>
+                    {medication.dispenserConnected && (
+                      <Badge variant="outline" className="ml-auto">Dispenser Connected</Badge>
+                    )}
                   </div>
                   <p className="text-sm text-gray-600">{medication.purpose}</p>
                 </CardHeader>
@@ -106,6 +353,40 @@ export default function Medications() {
                         <span className="text-right max-w-[60%]">{medication.instructions}</span>
                       </div>
                     )}
+                    
+                    {medication.dispenserConnected && (
+                      <>
+                        <Separator className="my-1" />
+                        <div className="flex justify-between">
+                          <span className="font-medium">Last dispensed:</span>
+                          <span>{medication.lastDispensed || "Not yet dispensed"}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="font-medium">Next scheduled:</span>
+                          <span>{medication.nextDispense || "Not scheduled"}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium">Status:</span>
+                          <Badge variant={
+                            medication.status === 'taken' ? "default" : 
+                            medication.status === 'upcoming' ? "outline" : "destructive"
+                          }>
+                            {medication.status === 'taken' && <Check className="h-3 w-3 mr-1" />}
+                            {medication.status === 'upcoming' && <Clock className="h-3 w-3 mr-1" />}
+                            {medication.status === 'missed' && <Bell className="h-3 w-3 mr-1" />}
+                            {medication.status ? medication.status.charAt(0).toUpperCase() + medication.status.slice(1) : 'N/A'}
+                          </Badge>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium">Guardian alerts:</span>
+                          <Switch
+                            checked={!!medication.guardianAlert}
+                            onCheckedChange={() => handleToggleGuardianAlert(medication.id)}
+                            disabled={!medication.dispenserConnected}
+                          />
+                        </div>
+                      </>
+                    )}
                   </div>
                   
                   {medication.refillDate && (
@@ -115,18 +396,79 @@ export default function Medications() {
                     </div>
                   )}
                   
-                  <Button 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={() => handleRequestRefill(medication.id)}
-                  >
-                    Request Refill
-                  </Button>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => handleRequestRefill(medication.id)}
+                    >
+                      Request Refill
+                    </Button>
+                    
+                    {medication.dispenserConnected && (
+                      <Button 
+                        className="w-full"
+                        onClick={() => handleManualDispense(medication.id)}
+                        disabled={medication.status === 'taken'}
+                      >
+                        Dispense Now
+                      </Button>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             ))}
           </div>
         )}
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Medication Precautions</CardTitle>
+            <CardDescription>Important safety information about your medications</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="bg-blue-50 p-4 rounded-md">
+              <h3 className="font-medium mb-2">Lisinopril (Blood Pressure)</h3>
+              <ul className="list-disc pl-5 space-y-1 text-sm">
+                <li>Monitor your blood pressure regularly</li>
+                <li>Avoid high-potassium foods (bananas, potatoes, oranges)</li>
+                <li>Stay hydrated but consult your doctor about fluid intake limits</li>
+                <li>Avoid salt substitutes containing potassium</li>
+                <li>Take medication at the same time each day</li>
+              </ul>
+            </div>
+            
+            <div className="bg-blue-50 p-4 rounded-md">
+              <h3 className="font-medium mb-2">Metformin (Diabetes Management)</h3>
+              <ul className="list-disc pl-5 space-y-1 text-sm">
+                <li>Take with meals to reduce stomach upset</li>
+                <li>Monitor blood sugar levels as directed</li>
+                <li>Maintain consistent carbohydrate intake across meals</li>
+                <li>Limit alcohol consumption</li>
+                <li>Be alert for signs of low blood sugar (hypoglycemia)</li>
+              </ul>
+            </div>
+            
+            <div className="bg-blue-50 p-4 rounded-md">
+              <h3 className="font-medium mb-2">Atorvastatin (Cholesterol)</h3>
+              <ul className="list-disc pl-5 space-y-1 text-sm">
+                <li>Take in the evening or at bedtime for best effectiveness</li>
+                <li>Avoid grapefruit juice while taking this medication</li>
+                <li>Report any unexplained muscle pain to your doctor</li>
+                <li>Follow a heart-healthy diet low in saturated fats</li>
+                <li>Complete regular blood tests to monitor liver function</li>
+              </ul>
+            </div>
+            
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Important Note</AlertTitle>
+              <AlertDescription>
+                Never adjust dosages or stop taking medications without consulting your healthcare provider. Always report side effects promptly.
+              </AlertDescription>
+            </Alert>
+          </CardContent>
+        </Card>
       </div>
     </AppLayout>
   );
