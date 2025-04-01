@@ -8,6 +8,9 @@ import Dashboard from "./pages/Dashboard";
 import HealthConcerns from "./pages/HealthConcerns";
 import MedicalHistory from "./pages/MedicalHistory";
 import FamilyHealth from "./pages/FamilyHealth";
+import Consultations from "./pages/Consultations";
+import Medications from "./pages/Medications";
+import FindDoctors from "./pages/FindDoctors";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,7 +26,9 @@ const App = () => (
           <Route path="/health-concerns" element={<HealthConcerns />} />
           <Route path="/medical-history" element={<MedicalHistory />} />
           <Route path="/family-health" element={<FamilyHealth />} />
-          {/* Add more routes as components are built */}
+          <Route path="/consultations" element={<Consultations />} />
+          <Route path="/medications" element={<Medications />} />
+          <Route path="/find-doctors" element={<FindDoctors />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
