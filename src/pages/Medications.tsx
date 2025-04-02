@@ -1,7 +1,6 @@
-
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Calendar, Clock, AlertCircle, Pill, PlusCircle, DeviceTablet, Bell, Check, RotateCw } from "lucide-react";
+import { Calendar, Clock, AlertCircle, Pill, PlusCircle, Tablet, Bell, Check, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -207,7 +206,7 @@ export default function Medications() {
         <Card className={isDispenserConnected ? "border-green-200 bg-green-50/30" : "border-amber-200 bg-amber-50/30"}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
-              <DeviceTablet className="h-5 w-5" />
+              <Tablet className="h-5 w-5" />
               Smart Medicine Dispenser
               <Badge variant={isDispenserConnected ? "default" : "outline"} className="ml-2">
                 {dispenserStatus}
