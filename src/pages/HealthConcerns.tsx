@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { 
   Card, 
@@ -18,7 +18,11 @@ import {
   ThumbsDown,
   Search,
   MapPin,
-  Shield
+  Shield,
+  Calendar,
+  Clock,
+  Phone,
+  Star
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -114,6 +118,58 @@ const symptomsDatabase = {
       "Practice stress-reduction techniques like mindfulness"
     ],
     whenToSeeDoctor: "If fatigue is severe, sudden, or persists despite lifestyle changes, consult your healthcare provider."
+  },
+  
+  "joint pain": {
+    analysis: "Joint pain may be caused by arthritis, injury, overuse, or inflammatory conditions.",
+    treatment: "Rest affected joints, apply ice/heat, and consider anti-inflammatory medications if approved by your doctor.",
+    precautions: [
+      "Maintain a healthy weight to reduce joint stress",
+      "Use proper form during physical activities",
+      "Incorporate low-impact exercises like swimming or cycling",
+      "Consider supportive devices like braces when needed",
+      "Avoid activities that worsen pain"
+    ],
+    whenToSeeDoctor: "If joint pain is accompanied by significant swelling, redness, warmth, or limited range of motion, seek medical attention."
+  },
+  
+  "rash": {
+    analysis: "Your skin rash could be due to allergies, irritants, infections, or underlying medical conditions.",
+    treatment: "Keep the area clean, avoid irritants, and use over-the-counter hydrocortisone for itching if approved by your doctor.",
+    precautions: [
+      "Avoid scratching to prevent infection",
+      "Use mild, fragrance-free soaps and detergents",
+      "Wear loose, breathable clothing over affected areas",
+      "Keep track of potential triggers",
+      "Avoid very hot showers or baths"
+    ],
+    whenToSeeDoctor: "Seek medical attention if the rash spreads quickly, is accompanied by fever, forms blisters, or affects your face or genitals."
+  },
+  
+  "dizziness": {
+    analysis: "Dizziness can result from inner ear issues, low blood pressure, dehydration, medication side effects, or more serious conditions.",
+    treatment: "Sit or lie down when feeling dizzy, stay hydrated, and move slowly when changing positions.",
+    precautions: [
+      "Avoid sudden head movements",
+      "Rise slowly from sitting or lying positions",
+      "Stay well-hydrated throughout the day",
+      "Use assistive devices like handrails when needed",
+      "Avoid driving or operating machinery when dizzy"
+    ],
+    whenToSeeDoctor: "Get immediate medical attention if dizziness is accompanied by chest pain, severe headache, vision changes, slurred speech, or loss of consciousness."
+  },
+  
+  "shortness of breath": {
+    analysis: "Difficulty breathing can be caused by asthma, allergies, anxiety, respiratory infections, heart problems, or lung conditions.",
+    treatment: "Use prescribed inhalers if applicable, practice breathing techniques, and avoid triggers.",
+    precautions: [
+      "Avoid smoke and air pollution",
+      "Use air purifiers in your home",
+      "Practice breathing exercises regularly",
+      "Monitor and record symptoms and triggers",
+      "Maintain a healthy weight"
+    ],
+    whenToSeeDoctor: "Seek emergency care if shortness of breath is sudden and severe, occurs at rest, or is accompanied by chest pain, blue lips, or altered consciousness."
   }
 };
 
@@ -130,7 +186,8 @@ const doctorsDatabase = [
     availableSlots: ["10:30 AM", "2:15 PM", "4:00 PM"],
     image: "/placeholder.svg",
     rating: 4.8,
-    insuranceAccepted: ["BlueCross", "Aetna", "Medicare"]
+    insuranceAccepted: ["BlueCross", "Aetna", "Medicare"],
+    phone: "(555) 123-4567"
   },
   {
     id: "d2",
@@ -143,7 +200,8 @@ const doctorsDatabase = [
     availableSlots: ["9:15 AM", "11:00 AM", "3:30 PM"],
     image: "/placeholder.svg",
     rating: 4.6,
-    insuranceAccepted: ["UnitedHealth", "Cigna", "Medicare"]
+    insuranceAccepted: ["UnitedHealth", "Cigna", "Medicare"],
+    phone: "(555) 987-6543"
   },
   {
     id: "d3",
@@ -156,7 +214,8 @@ const doctorsDatabase = [
     availableSlots: ["10:30 AM", "1:45 PM", "5:15 PM"],
     image: "/placeholder.svg",
     rating: 4.9,
-    insuranceAccepted: ["Aetna", "Cigna", "Humana"]
+    insuranceAccepted: ["Aetna", "Cigna", "Humana"],
+    phone: "(555) 456-7890"
   },
   {
     id: "d4",
@@ -169,7 +228,8 @@ const doctorsDatabase = [
     availableSlots: ["11:30 AM (Mon)", "2:00 PM (Tue)", "4:00 PM (Wed)"],
     image: "/placeholder.svg",
     rating: 4.7,
-    insuranceAccepted: ["BlueCross", "UnitedHealth", "Medicare"]
+    insuranceAccepted: ["BlueCross", "UnitedHealth", "Medicare"],
+    phone: "(555) 234-5678"
   },
   {
     id: "d5",
@@ -182,7 +242,8 @@ const doctorsDatabase = [
     availableSlots: ["9:00 AM", "1:30 PM", "3:45 PM"],
     image: "/placeholder.svg",
     rating: 4.5,
-    insuranceAccepted: ["Aetna", "Medicare", "Humana"]
+    insuranceAccepted: ["Aetna", "Medicare", "Humana"],
+    phone: "(555) 789-0123"
   },
   {
     id: "d6",
@@ -195,7 +256,50 @@ const doctorsDatabase = [
     availableSlots: ["10:00 AM", "12:30 PM", "4:45 PM"],
     image: "/placeholder.svg",
     rating: 4.9,
-    insuranceAccepted: ["BlueCross", "UnitedHealth", "Cigna"]
+    insuranceAccepted: ["BlueCross", "UnitedHealth", "Cigna"],
+    phone: "(555) 321-6547"
+  },
+  {
+    id: "d7",
+    name: "Dr. Emily Roberts",
+    specialty: "Orthopedics",
+    location: "Joint & Bone Medical Center",
+    distance: 2.8,
+    availability: "Today",
+    timings: "8:00 AM - 4:00 PM",
+    availableSlots: ["8:30 AM", "11:00 AM", "3:00 PM"],
+    image: "/placeholder.svg",
+    rating: 4.7,
+    insuranceAccepted: ["Medicare", "BlueCross", "UnitedHealth"],
+    phone: "(555) 432-1098"
+  },
+  {
+    id: "d8",
+    name: "Dr. James Taylor",
+    specialty: "Gastroenterology",
+    location: "Digestive Health Institute",
+    distance: 3.4,
+    availability: "Tomorrow",
+    timings: "9:00 AM - 5:00 PM",
+    availableSlots: ["10:15 AM", "1:30 PM", "4:00 PM"],
+    image: "/placeholder.svg",
+    rating: 4.8,
+    insuranceAccepted: ["Aetna", "Cigna", "Medicare"],
+    phone: "(555) 654-3210"
+  },
+  {
+    id: "d9",
+    name: "Dr. Sophia Kim",
+    specialty: "Family Medicine",
+    location: "Community Health Center",
+    distance: 0.6,
+    availability: "Today",
+    timings: "8:30 AM - 5:30 PM",
+    availableSlots: ["9:00 AM", "12:00 PM", "2:30 PM", "5:00 PM"],
+    image: "/placeholder.svg",
+    rating: 4.9,
+    insuranceAccepted: ["Medicare", "Medicaid", "BlueCross"],
+    phone: "(555) 876-5432"
   }
 ];
 
@@ -207,8 +311,10 @@ export default function HealthConcerns() {
   const [showDoctors, setShowDoctors] = useState(false);
   const [doctors, setDoctors] = useState<typeof doctorsDatabase>([]);
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
+  const [availabilityFilter, setAvailabilityFilter] = useState<string | null>(null);
   const { toast } = useToast();
 
+  // Function to analyze health concerns with improved matching
   const handleSubmitConcern = () => {
     if (!concern) {
       toast({
@@ -221,36 +327,84 @@ export default function HealthConcerns() {
     
     setLoading(true);
     
-    // Analyze the concern against our symptom database
+    // Smart analysis with improved keyword matching
     setTimeout(() => {
-      // Check if any key words from the symptom database appear in the concern
       const lowerCaseConcern = concern.toLowerCase();
       let foundAnalysis = null;
+      let highestMatchScore = 0;
+      let bestMatch = null;
       
-      // Find matching symptoms in our database
+      // Improved symptom matching algorithm
       for (const symptom in symptomsDatabase) {
+        // Check if symptom appears in concern
         if (lowerCaseConcern.includes(symptom)) {
-          foundAnalysis = symptomsDatabase[symptom as keyof typeof symptomsDatabase];
-          break;
+          const keywordScore = symptom.length / lowerCaseConcern.length; // Longer keyword matches are more significant
+          const occurrenceScore = (lowerCaseConcern.match(new RegExp(symptom, 'g')) || []).length;
+          const matchScore = keywordScore * occurrenceScore;
+          
+          if (matchScore > highestMatchScore) {
+            highestMatchScore = matchScore;
+            bestMatch = symptom;
+          }
         }
+      }
+      
+      // Use best matching symptom if found
+      if (bestMatch) {
+        foundAnalysis = symptomsDatabase[bestMatch as keyof typeof symptomsDatabase];
       }
       
       // Fallback to generic response if no match found
       if (!foundAnalysis) {
-        foundAnalysis = {
-          analysis: "Based on your description, we recommend consulting with a healthcare professional for a proper diagnosis. Your symptoms could be related to various conditions, and a doctor can provide appropriate guidance after examination.",
-          precautions: [
-            "Monitor your symptoms and document any changes",
-            "Get adequate rest and stay hydrated",
-            "Avoid self-medication without professional advice",
-            "Consider consulting with a primary care physician"
-          ],
-          whenToSeeDoctor: "If symptoms are severe, persistent, or worsening, please seek medical attention promptly."
-        };
+        const possibleSymptoms = Object.keys(symptomsDatabase).filter(symptom => 
+          lowerCaseConcern.includes(symptom.substring(0, 4)) || 
+          lowerCaseConcern.includes(symptom.substring(0, 3))
+        );
+        
+        if (possibleSymptoms.length > 0) {
+          // Use closest partial match
+          foundAnalysis = symptomsDatabase[possibleSymptoms[0] as keyof typeof symptomsDatabase];
+        } else {
+          // Generic response as last resort
+          foundAnalysis = {
+            analysis: "Based on your description, we recommend consulting with a healthcare professional for a proper diagnosis. Your symptoms could be related to various conditions, and a doctor can provide appropriate guidance after examination.",
+            treatment: "It's best to consult with a healthcare professional before attempting any self-treatment.",
+            precautions: [
+              "Monitor your symptoms and document any changes",
+              "Get adequate rest and stay hydrated",
+              "Avoid self-medication without professional advice",
+              "Consider consulting with a primary care physician"
+            ],
+            whenToSeeDoctor: "If symptoms are severe, persistent, or worsening, please seek medical attention promptly."
+          };
+        }
       }
+      
+      // Recommend specialty based on symptoms
+      const specialtyRecommendations = {
+        "headache": "Neurology",
+        "stomachache": "Gastroenterology",
+        "back pain": "Orthopedics",
+        "cough": "Internal Medicine",
+        "fever": "Family Medicine",
+        "fatigue": "Internal Medicine",
+        "joint pain": "Orthopedics",
+        "rash": "Dermatology",
+        "dizziness": "Neurology",
+        "shortness of breath": "Pulmonology"
+      };
+      
+      const recommendedSpecialty = bestMatch 
+        ? specialtyRecommendations[bestMatch as keyof typeof specialtyRecommendations] || "Family Medicine"
+        : "Family Medicine";
+      
+      foundAnalysis.recommendedSpecialty = recommendedSpecialty;
       
       setAnalysis(foundAnalysis);
       setLoading(false);
+      
+      // Auto-load doctors based on recommended specialty
+      handleFindDoctors(recommendedSpecialty);
     }, 1500);
   };
   
@@ -261,29 +415,110 @@ export default function HealthConcerns() {
         ? "We're glad our analysis was helpful." 
         : "Thank you for helping us improve our AI system.",
     });
-    setAnalysis(null);
-    setConcern("");
+    
+    // Save feedback to improve future analysis
+    console.log("Feedback recorded:", { 
+      concern, 
+      positive, 
+      timestamp: new Date().toISOString() 
+    });
+    
+    // Clear state if negative feedback
+    if (!positive) {
+      setAnalysis(null);
+      setConcern("");
+    }
   };
 
-  const handleFindDoctors = () => {
+  const handleFindDoctors = (specialty: string | null = null) => {
     setLoading(true);
-    // Simulate finding nearby doctors and sort by distance
+    
+    // Simulate finding nearby doctors with improved sorting algorithm
     setTimeout(() => {
-      const sortedDoctors = [...doctorsDatabase].sort((a, b) => a.distance - b.distance);
-      setDoctors(sortedDoctors);
+      // First sort by distance (primary sort)
+      const sortedByDistance = [...doctorsDatabase].sort((a, b) => a.distance - b.distance);
+      
+      // Apply additional smart sorting criteria based on specialty and availability
+      const smartSorted = sortedByDistance.sort((a, b) => {
+        // Prioritize doctors of recommended specialty if provided
+        if (specialty) {
+          if (a.specialty === specialty && b.specialty !== specialty) return -1;
+          if (a.specialty !== specialty && b.specialty === specialty) return 1;
+        }
+        
+        // Prioritize doctors available today or tomorrow
+        const availabilityScore = (doc: typeof a) => {
+          if (doc.availability === "Today") return 3;
+          if (doc.availability === "Tomorrow") return 2;
+          return 1;
+        };
+        
+        const aScore = availabilityScore(a);
+        const bScore = availabilityScore(b);
+        
+        if (aScore !== bScore) return bScore - aScore;
+        
+        // If all else is equal, sort by distance
+        return a.distance - b.distance;
+      });
+      
+      setDoctors(smartSorted);
       setShowDoctors(true);
+      
+      // Set specialty filter if provided
+      if (specialty) {
+        setSelectedSpecialty(specialty);
+      }
+      
       setLoading(false);
     }, 1000);
   };
 
-  // Filter doctors by specialty
-  const filteredDoctors = selectedSpecialty
-    ? doctors.filter(doc => doc.specialty === selectedSpecialty)
-    : doctors;
+  // Apply multiple filters together
+  const applyFilters = () => {
+    // Filter doctors by specialty
+    let filtered = selectedSpecialty
+      ? doctors.filter(doc => doc.specialty === selectedSpecialty)
+      : doctors;
+    
+    // Filter by availability
+    if (availabilityFilter) {
+      filtered = filtered.filter(doc => {
+        if (availabilityFilter === "today") return doc.availability === "Today";
+        if (availabilityFilter === "tomorrow") return doc.availability === "Tomorrow";
+        if (availabilityFilter === "this-week") return ["Today", "Tomorrow", "Thursday", "Friday"].includes(doc.availability);
+        return true;
+      });
+    }
+    
+    // Filter by search term
+    if (searchTerm) {
+      const lowercaseSearch = searchTerm.toLowerCase();
+      filtered = filtered.filter(doc => 
+        doc.name.toLowerCase().includes(lowercaseSearch) ||
+        doc.specialty.toLowerCase().includes(lowercaseSearch) ||
+        doc.location.toLowerCase().includes(lowercaseSearch)
+      );
+    }
+    
+    return filtered;
+  };
 
-  // Get unique specialties
+  // Apply all filters
+  const filteredDoctors = applyFilters();
+
+  // Get unique specialties for filter options
   const specialties = Array.from(new Set(doctors.map(doc => doc.specialty)));
 
+  // Handle scheduling an appointment
+  const handleScheduleAppointment = (doctor: typeof doctorsDatabase[0], slot: string) => {
+    toast({
+      title: "Appointment Scheduled",
+      description: `Your appointment with ${doctor.name} at ${slot} has been scheduled. We'll send you a confirmation email shortly.`,
+    });
+  };
+
+  // Sample recent concerns
   const recentConcerns = [
     {
       id: "1",
@@ -308,6 +543,17 @@ export default function HealthConcerns() {
     }
   ];
 
+  // Add quick symptom selection capability
+  const commonSymptoms = [
+    "Headache", "Fever", "Cough", "Fatigue", "Nausea", 
+    "Back pain", "Stomachache", "Joint pain", "Rash", "Dizziness",
+    "Shortness of breath"
+  ];
+
+  const handleQuickSymptomSelect = (symptom: string) => {
+    setConcern(symptom.toLowerCase());
+  };
+
   return (
     <AppLayout>
       <div className="flex flex-col md:flex-row gap-6">
@@ -322,7 +568,7 @@ export default function HealthConcerns() {
             </p>
           </div>
           
-          <Card>
+          <Card className="backdrop-blur-sm bg-background/70 shadow-lg border border-opacity-40 hover:border-primary/40 transition-all duration-300">
             <CardHeader>
               <CardTitle>Describe Your Health Concern</CardTitle>
               <CardDescription>
@@ -336,12 +582,25 @@ export default function HealthConcerns() {
                 value={concern}
                 onChange={(e) => setConcern(e.target.value)}
               />
+              <div className="flex flex-wrap gap-2 mt-4">
+                {commonSymptoms.map((symptom) => (
+                  <Badge 
+                    key={symptom} 
+                    variant="outline" 
+                    className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                    onClick={() => handleQuickSymptomSelect(symptom)}
+                  >
+                    {symptom}
+                  </Badge>
+                ))}
+              </div>
             </CardContent>
             <CardFooter className="flex flex-col sm:flex-row gap-2 sm:gap-4">
               <Button 
                 onClick={handleSubmitConcern} 
                 disabled={loading || !concern}
                 className="w-full sm:w-auto"
+                variant="gradient"
               >
                 {loading ? (
                   <>
@@ -355,7 +614,7 @@ export default function HealthConcerns() {
                 )}
               </Button>
               <Button 
-                onClick={handleFindDoctors}
+                onClick={() => handleFindDoctors()}
                 variant="outline"
                 className="w-full sm:w-auto"
               >
@@ -366,7 +625,7 @@ export default function HealthConcerns() {
           </Card>
           
           {analysis && (
-            <Card className="border-primary/30">
+            <Card className="border-primary/30 backdrop-blur-sm bg-background/80 shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <span className="h-3 w-3 rounded-full bg-primary animate-pulse-light" />
@@ -402,6 +661,17 @@ export default function HealthConcerns() {
                   </ul>
                 </div>
                 
+                {analysis.recommendedSpecialty && (
+                  <div className="bg-blue-50 p-3 rounded-md">
+                    <h3 className="font-medium mb-1 flex items-center gap-2">
+                      <AlertCircle className="h-4 w-4 text-blue-600" /> Recommended Specialist
+                    </h3>
+                    <p className="text-sm text-blue-800">
+                      Based on your symptoms, we recommend consulting with a <strong>{analysis.recommendedSpecialty}</strong> specialist.
+                    </p>
+                  </div>
+                )}
+                
                 <div className="bg-amber-50 p-3 rounded-md">
                   <h3 className="font-medium mb-1 flex items-center gap-2">
                     <AlertCircle className="h-4 w-4 text-amber-600" /> When to See a Doctor
@@ -432,13 +702,13 @@ export default function HealthConcerns() {
           )}
 
           {showDoctors && (
-            <Card>
+            <Card className="backdrop-blur-sm bg-background/80 shadow-lg">
               <CardHeader>
                 <CardTitle>Doctors Near You</CardTitle>
                 <CardDescription>
-                  Closest healthcare providers sorted by distance
+                  {filteredDoctors.length} healthcare providers found based on your criteria
                 </CardDescription>
-                <div className="flex flex-wrap gap-2 mt-2">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-4">
                   <Button 
                     variant={selectedSpecialty === null ? "default" : "outline"}
                     size="sm"
@@ -457,6 +727,36 @@ export default function HealthConcerns() {
                     </Button>
                   ))}
                 </div>
+                <div className="flex gap-2 mt-3">
+                  <Button 
+                    variant={availabilityFilter === null ? "secondary" : "outline"}
+                    size="sm"
+                    onClick={() => setAvailabilityFilter(null)}
+                  >
+                    Any Time
+                  </Button>
+                  <Button 
+                    variant={availabilityFilter === "today" ? "secondary" : "outline"}
+                    size="sm"
+                    onClick={() => setAvailabilityFilter("today")}
+                  >
+                    Today
+                  </Button>
+                  <Button 
+                    variant={availabilityFilter === "tomorrow" ? "secondary" : "outline"}
+                    size="sm"
+                    onClick={() => setAvailabilityFilter("tomorrow")}
+                  >
+                    Tomorrow
+                  </Button>
+                  <Button 
+                    variant={availabilityFilter === "this-week" ? "secondary" : "outline"}
+                    size="sm"
+                    onClick={() => setAvailabilityFilter("this-week")}
+                  >
+                    This Week
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -467,7 +767,7 @@ export default function HealthConcerns() {
                   )}
                   
                   {filteredDoctors.map((doctor) => (
-                    <div key={doctor.id} className="flex flex-col md:flex-row md:items-start gap-4 p-4 rounded-lg border">
+                    <div key={doctor.id} className="flex flex-col md:flex-row md:items-start gap-4 p-4 rounded-lg border bg-card/40 backdrop-blur-xs hover:shadow-md transition-all">
                       <div className="h-16 w-16 rounded-full overflow-hidden bg-muted flex-shrink-0 mx-auto md:mx-0">
                         <img src={doctor.image} alt={doctor.name} className="h-full w-full object-cover" />
                       </div>
@@ -484,13 +784,25 @@ export default function HealthConcerns() {
                         
                         <div className="grid gap-3 mt-3">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                            <div>
-                              <span className="font-medium">Location:</span>
-                              <span className="ml-2">{doctor.location}</span>
+                            <div className="flex items-start gap-2">
+                              <MapPin className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
+                              <span>{doctor.location}</span>
                             </div>
-                            <div>
-                              <span className="font-medium">Hours:</span>
-                              <span className="ml-2">{doctor.timings}</span>
+                            <div className="flex items-start gap-2">
+                              <Phone className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
+                              <span>{doctor.phone}</span>
+                            </div>
+                            <div className="flex items-start gap-2">
+                              <Clock className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
+                              <span>{doctor.timings}</span>
+                            </div>
+                            <div className="flex items-start gap-2">
+                              <Calendar className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
+                              <span className="text-green-600 font-medium">Next available: {doctor.availability}</span>
+                            </div>
+                            <div className="flex items-start gap-2">
+                              <Star className="h-4 w-4 text-yellow-500 mt-1 flex-shrink-0" />
+                              <span>{doctor.rating.toFixed(1)} out of 5</span>
                             </div>
                             <div className="col-span-1 md:col-span-2">
                               <span className="font-medium">Available slots:</span>
@@ -504,7 +816,13 @@ export default function HealthConcerns() {
                             </div>
                           </div>
                           
-                          <Button className="mt-2">Book Appointment</Button>
+                          <Button 
+                            className="mt-2" 
+                            onClick={() => handleScheduleAppointment(doctor, doctor.availableSlots[0])}
+                            variant="gradient"
+                          >
+                            Book Appointment
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -516,7 +834,7 @@ export default function HealthConcerns() {
         </div>
         
         <div className="w-full md:w-[350px] space-y-6">
-          <Card>
+          <Card className="backdrop-blur-sm bg-background/70 shadow-md border border-opacity-40">
             <CardHeader>
               <CardTitle className="text-lg">Recent Health Concerns</CardTitle>
             </CardHeader>
@@ -542,10 +860,10 @@ export default function HealthConcerns() {
             </CardFooter>
           </Card>
           
-          <Card>
+          <Card className="backdrop-blur-sm bg-background/70 shadow-md border border-opacity-40">
             <CardHeader>
-              <CardTitle className="text-lg">Quick Symptom Checker</CardTitle>
-              <CardDescription>Search for common symptoms</CardDescription>
+              <CardTitle className="text-lg">Quick Symptom Search</CardTitle>
+              <CardDescription>Search for health information</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-2">
@@ -559,18 +877,47 @@ export default function HealthConcerns() {
                 </Button>
               </div>
               
-              <div className="flex flex-wrap gap-1">
-                {["Headache", "Fever", "Cough", "Fatigue", "Nausea", "Back pain", "Stomachache"].map((symptom) => (
-                  <Button 
-                    key={symptom} 
-                    variant="outline" 
-                    size="sm" 
-                    className="text-xs"
-                    onClick={() => setConcern(concern ? `${concern}, ${symptom.toLowerCase()}` : symptom)}
-                  >
-                    {symptom}
-                  </Button>
-                ))}
+              <div>
+                <h3 className="text-sm font-medium mb-2">Popular searches</h3>
+                <div className="flex flex-wrap gap-2">
+                  {["Headache", "Fever", "Cough", "Back pain", "Allergies", "Blood pressure"].map((term) => (
+                    <Button 
+                      key={term} 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-xs"
+                      onClick={() => setSearchTerm(term)}
+                    >
+                      {term}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="backdrop-blur-sm bg-background/70 shadow-md border border-opacity-40">
+            <CardHeader>
+              <CardTitle className="text-lg">Health Tips</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium">Preventive Care</h3>
+                <p className="text-xs text-muted-foreground">
+                  Regular check-ups can help detect potential health issues before they become serious. Schedule your annual exam today.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium">Mental Wellness</h3>
+                <p className="text-xs text-muted-foreground">
+                  Taking time for self-care activities like meditation, reading, or walking can improve your mental well-being.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium">Nutrition</h3>
+                <p className="text-xs text-muted-foreground">
+                  Eating a balanced diet rich in fruits, vegetables, and whole grains provides essential nutrients for optimal health.
+                </p>
               </div>
             </CardContent>
           </Card>

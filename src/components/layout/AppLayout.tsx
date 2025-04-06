@@ -9,7 +9,7 @@ interface AppLayoutProps {
 
 export function AppLayout({ children, className }: AppLayoutProps) {
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-background bg-opacity-90 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-50/40 via-background/60 to-background">
       <Sidebar />
       <main className={cn(
         "flex-1 p-5 md:p-8 md:ml-72 transition-all duration-300", 

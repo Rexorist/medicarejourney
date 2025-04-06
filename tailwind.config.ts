@@ -110,6 +110,18 @@ export default {
 				'fade-in': {
 					'0%': { opacity: '0' },
 					'100%': { opacity: '1' }
+				},
+				'shimmer': {
+					'0%': { backgroundPosition: '-1000px 0' },
+					'100%': { backgroundPosition: '1000px 0' }
+				},
+				'ripple': {
+					'0%': { transform: 'scale(0)', opacity: '1' },
+					'100%': { transform: 'scale(4)', opacity: '0' }
+				},
+				'spin-slow': {
+					'0%': { transform: 'rotate(0deg)' },
+					'100%': { transform: 'rotate(360deg)' }
 				}
 			},
 			animation: {
@@ -118,15 +130,29 @@ export default {
 				'pulse-light': 'pulse-light 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
 				'float': 'float 4s ease-in-out infinite',
 				'slide-in': 'slide-in 0.5s ease-out',
-				'fade-in': 'fade-in 0.5s ease-out'
+				'fade-in': 'fade-in 0.5s ease-out',
+				'shimmer': 'shimmer 2s infinite linear',
+				'ripple': 'ripple 1s cubic-bezier(0, 0, 0.2, 1)',
+				'spin-slow': 'spin-slow 6s linear infinite'
 			},
 			boxShadow: {
 				'neumorph': '10px 10px 20px rgba(0, 0, 0, 0.05), -10px -10px 20px rgba(255, 255, 255, 0.8)',
 				'neumorph-dark': '10px 10px 20px rgba(0, 0, 0, 0.3), -10px -10px 20px rgba(255, 255, 255, 0.05)',
 				'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.17)',
+				'glow': '0 0 15px rgba(59, 130, 246, 0.5)',
+				'float': '0 10px 30px -10px rgba(0, 0, 0, 0.1)',
+				'inner-glow': 'inset 0 0 5px rgba(59, 130, 246, 0.3)',
+				'soft': '0 2px 15px rgba(0, 0, 0, 0.05)'
 			},
 			backdropBlur: {
 				'xs': '2px',
+			},
+			backgroundImage: {
+				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+				'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+				'gradient-noise': 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E")',
+				'mesh-gradient': 'radial-gradient(at 0% 50%, hsla(194, 100%, 75%, 0.3) 0px, transparent 50%), radial-gradient(at 100% 0%, hsla(251, 100%, 75%, 0.3) 0px, transparent 50%)',
+				'dot-pattern': 'radial-gradient(circle, rgba(0,0,0,0.1) 1px, transparent 1px)',
 			}
 		}
 	},

@@ -10,16 +10,18 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground shadow-md hover:shadow-lg hover:bg-primary/90 hover:scale-[1.02]",
+        default: "bg-primary text-primary-foreground shadow-md hover:shadow-lg hover:bg-primary/90 hover:scale-[1.02] backdrop-blur-sm",
         destructive:
           "bg-destructive text-destructive-foreground shadow-md hover:shadow-lg hover:bg-destructive/90 hover:scale-[1.02]",
         outline:
-          "border border-input bg-background hover:bg-accent/50 hover:text-accent-foreground hover:border-accent",
+          "border border-input bg-transparent hover:bg-accent/50 hover:text-accent-foreground hover:border-accent backdrop-blur-sm",
         secondary:
-          "bg-secondary text-secondary-foreground shadow-sm hover:shadow-md hover:bg-secondary/80",
+          "bg-secondary text-secondary-foreground shadow-sm hover:shadow-md hover:bg-secondary/80 backdrop-blur-sm",
         ghost: "hover:bg-accent/50 hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        gradient: "bg-gradient-to-r from-medical-blue to-medical-purple text-white shadow-md hover:shadow-lg hover:opacity-90 hover:scale-[1.02]",
+        gradient: "bg-gradient-to-r from-medical-blue to-medical-purple text-white shadow-md hover:shadow-lg hover:opacity-90 hover:scale-[1.02] backdrop-blur-sm",
+        glass: "border border-white/20 bg-white/10 text-foreground shadow-glass backdrop-blur-sm hover:bg-white/20 hover:shadow-lg hover:scale-[1.02]",
+        neumorph: "bg-background shadow-neumorph text-foreground hover:shadow-neumorph-dark",
       },
       size: {
         default: "h-10 px-4 py-2",
