@@ -14,6 +14,7 @@ import Medications from "./pages/Medications";
 import FindDoctors from "./pages/FindDoctors";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
+import ForgotPassword from "./pages/ForgotPassword";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
@@ -29,6 +30,7 @@ const App = () => (
           <Routes>
             <Route path="/sign-in" element={<SignIn />} />
             <Route path="/sign-up" element={<SignUp />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/health-concerns" element={<ProtectedRoute><HealthConcerns /></ProtectedRoute>} />
             <Route path="/medical-history" element={<ProtectedRoute><MedicalHistory /></ProtectedRoute>} />

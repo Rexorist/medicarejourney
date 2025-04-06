@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/context/AuthContext';
-import { LogIn, Mail, Lock, Loader2, Github } from 'lucide-react';
+import { LogIn, Mail, Lock, Loader2 } from 'lucide-react';
 
 export default function SignIn() {
   const [email, setEmail] = useState('');

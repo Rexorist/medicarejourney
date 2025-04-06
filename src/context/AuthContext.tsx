@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
 
@@ -16,6 +15,7 @@ type AuthContextType = {
   signInWithGoogle: () => Promise<void>;
   signUp: (name: string, email: string, password: string) => Promise<void>;
   signOut: () => void;
+  resetPassword: (email: string) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,7 +32,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Check for existing session on mount
   useEffect(() => {
     const savedUser = localStorage.getItem('medicare_user');
     if (savedUser) {
@@ -46,14 +45,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
   }, []);
 
-  // Mock sign-in function
   const signIn = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // In a real app, you would call an API here
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Demo user - in a real app this would come from your backend
       if (email === 'demo@example.com' && password === 'password') {
         const mockUser = {
           id: '123456',
@@ -83,12 +79,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Mock sign-in with Google
   const signInWithGoogle = async () => {
     setIsLoading(true);
     try {
-      // In a real app, you would call Google OAuth API
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       const mockUser = {
         id: '789012',
@@ -116,12 +110,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Mock sign-up function
   const signUp = async (name: string, email: string, password: string) => {
     setIsLoading(true);
     try {
-      // In a real app, you would call an API here
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       const mockUser = {
         id: Math.random().toString(36).substring(2, 11),
@@ -149,7 +141,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Sign out function
   const signOut = () => {
     setUser(null);
     localStorage.removeItem('medicare_user');
@@ -159,8 +150,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
+  const resetPassword = async (email: string) => {
+    setIsLoading(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast({
+        title: 'Password reset link sent',
+        description: 'If an account exists with this email, we have sent password reset instructions.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Password reset failed',
+        description: 'Failed to send password reset link',
+        variant: 'destructive',
+      });
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, signIn, signInWithGoogle, signUp, signOut }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      isLoading, 
+      signIn, 
+      signInWithGoogle, 
+      signUp, 
+      signOut,
+      resetPassword 
+    }}>
       {children}
     </AuthContext.Provider>
   );
