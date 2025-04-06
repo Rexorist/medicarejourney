@@ -12,10 +12,12 @@ export function AppLayout({ children, className }: AppLayoutProps) {
     <div className="flex min-h-screen bg-background">
       <Sidebar />
       <main className={cn(
-        "flex-1 p-4 md:p-6 md:ml-64", 
+        "flex-1 p-5 md:p-8 md:ml-72 transition-all duration-300", 
         className
       )}>
-        {children}
+        <div className="max-w-6xl mx-auto">
+          {children}
+        </div>
       </main>
     </div>
   );
