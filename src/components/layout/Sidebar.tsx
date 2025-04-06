@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -11,6 +11,7 @@ import {
   ChevronRight, Settings, LogOut
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useAuth } from "@/context/AuthContext";
 
 interface NavItemProps {
   icon: React.ReactNode;
@@ -50,9 +51,16 @@ const NavItem = ({ icon, label, href, active }: NavItemProps) => {
 
 export function Sidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, signOut } = useAuth();
   
   const isActive = (path: string) => location.pathname === path;
+
+  const handleSignOut = () => {
+    signOut();
+    navigate('/sign-in');
+  };
 
   const navigation = [
     { icon: <Home size={20} />, label: "Dashboard", href: "/" },
@@ -124,19 +132,24 @@ export function Sidebar() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Avatar className="ring-2 ring-sidebar-primary/20">
-                  <AvatarImage src="/placeholder.svg" />
-                  <AvatarFallback>JD</AvatarFallback>
+                  <AvatarImage src={user?.avatar || "/placeholder.svg"} />
+                  <AvatarFallback>{user?.name?.substring(0, 2).toUpperCase() || "U"}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="text-sm font-medium">John Doe</p>
-                  <p className="text-xs text-muted-foreground">john@example.com</p>
+                  <p className="text-sm font-medium">{user?.name || "Guest"}</p>
+                  <p className="text-xs text-muted-foreground">{user?.email || "Not signed in"}</p>
                 </div>
               </div>
               <div className="flex gap-1">
                 <Button variant="ghost" size="icon" className="h-8 w-8">
                   <Settings size={16} />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 text-red-500" 
+                  onClick={handleSignOut}
+                >
                   <LogOut size={16} />
                 </Button>
               </div>
