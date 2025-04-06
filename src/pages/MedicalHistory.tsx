@@ -22,64 +22,46 @@ import {
 import { AddReadingDialog } from "@/components/medical-history/AddReadingDialog";
 import { useToast } from "@/hooks/use-toast";
 
-const bloodPressureData = [
-  { date: "Jan", systolic: 120, diastolic: 80 },
-  { date: "Feb", systolic: 124, diastolic: 82 },
-  { date: "Mar", systolic: 119, diastolic: 79 },
-  { date: "Apr", systolic: 122, diastolic: 81 },
-  { date: "May", systolic: 118, diastolic: 78 },
-  { date: "Jun", systolic: 121, diastolic: 80 },
-];
-
-const bloodSugarData = [
-  { date: "Jan", level: 95 },
-  { date: "Feb", level: 100 },
-  { date: "Mar", level: 98 },
-  { date: "Apr", level: 105 },
-  { date: "May", level: 99 },
-  { date: "Jun", level: 97 },
-];
-
 export default function MedicalHistory() {
   const { toast } = useToast();
   const [bloodPressureData, setBloodPressureData] = useState([
-    { date: "Jan", systolic: 120, diastolic: 80 },
-    { date: "Feb", systolic: 124, diastolic: 82 },
-    { date: "Mar", systolic: 119, diastolic: 79 },
-    { date: "Apr", systolic: 122, diastolic: 81 },
-    { date: "May", systolic: 118, diastolic: 78 },
-    { date: "Jun", systolic: 121, diastolic: 80 },
+    { date: "Dec", systolic: 120, diastolic: 80 },
+    { date: "Jan", systolic: 124, diastolic: 82 },
+    { date: "Feb", systolic: 119, diastolic: 79 },
+    { date: "Mar", systolic: 122, diastolic: 81 },
+    { date: "Apr", systolic: 118, diastolic: 78 },
+    { date: "May", systolic: 121, diastolic: 80 },
   ]);
   
   const [bloodSugarData, setBloodSugarData] = useState([
-    { date: "Jan", level: 95 },
-    { date: "Feb", level: 100 },
-    { date: "Mar", level: 98 },
-    { date: "Apr", level: 105 },
-    { date: "May", level: 99 },
-    { date: "Jun", level: 97 },
+    { date: "Dec", level: 95 },
+    { date: "Jan", level: 100 },
+    { date: "Feb", level: 98 },
+    { date: "Mar", level: 105 },
+    { date: "Apr", level: 99 },
+    { date: "May", level: 97 },
   ]);
 
   const medicalRecords = [
     {
       id: "1",
       title: "Annual Physical Checkup",
-      date: "Mar 15, 2023",
-      provider: "Dr. Sarah Johnson",
+      date: "Mar 15, 2025",
+      provider: "Dr. Sanjay Kapoor",
       notes: "All results within normal range. Vitamin D slightly low, supplement recommended."
     },
     {
       id: "2",
       title: "Dental Cleaning",
-      date: "Jan 10, 2023",
-      provider: "Dr. Michael Chen",
+      date: "Jan 10, 2025",
+      provider: "Dr. Preeti Sharma",
       notes: "No cavities. Recommended flossing more regularly."
     },
     {
       id: "3",
       title: "Eye Examination",
-      date: "Nov 22, 2022",
-      provider: "Dr. Lisa Wong",
+      date: "Nov 22, 2024",
+      provider: "Dr. Vijay Mehta",
       notes: "Slight astigmatism. New prescription provided for glasses."
     }
   ];
@@ -250,7 +232,7 @@ export default function MedicalHistory() {
                     </div>
                     <div className="flex-1 pb-8">
                       <h3 className="font-medium">Annual Physical Checkup</h3>
-                      <p className="text-sm text-muted-foreground">March 15, 2023</p>
+                      <p className="text-sm text-muted-foreground">March 15, 2025</p>
                       <p className="text-sm mt-2">All results within normal range. Vitamin D slightly low, supplement recommended.</p>
                     </div>
                   </div>
@@ -264,7 +246,7 @@ export default function MedicalHistory() {
                     </div>
                     <div className="flex-1 pb-8">
                       <h3 className="font-medium">Blood Pressure Check</h3>
-                      <p className="text-sm text-muted-foreground">February 20, 2023</p>
+                      <p className="text-sm text-muted-foreground">February 20, 2025</p>
                       <p className="text-sm mt-2">Reading: 120/80 mmHg - Within healthy range</p>
                     </div>
                   </div>
@@ -277,7 +259,7 @@ export default function MedicalHistory() {
                     </div>
                     <div className="flex-1">
                       <h3 className="font-medium">Blood Lab Work</h3>
-                      <p className="text-sm text-muted-foreground">January 10, 2023</p>
+                      <p className="text-sm text-muted-foreground">January 10, 2025</p>
                       <p className="text-sm mt-2">Complete blood count, lipid panel, and metabolic panel. All results normal.</p>
                     </div>
                   </div>

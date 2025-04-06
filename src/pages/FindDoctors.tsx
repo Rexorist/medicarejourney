@@ -1,4 +1,3 @@
-
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -44,107 +43,107 @@ export default function FindDoctors() {
   const [doctors, setDoctors] = useState<Doctor[]>([
     {
       id: "1",
-      name: "Dr. Emily Wilson",
+      name: "Dr. Priya Sharma",
       specialty: "Cardiologist",
-      address: "123 Medical Center Dr, City Name",
+      address: "123 Wellness Center, Jubilee Hills, Hyderabad",
       distance: "1.2",
-      phone: "(555) 123-4567",
+      phone: "+91 98765 43210",
       rating: 4.8,
       availableDate: "Tomorrow",
       timings: "9:00 AM - 5:00 PM",
       availableSlots: ["10:30 AM", "2:15 PM", "4:00 PM"],
-      insuranceAccepted: ["BlueCross", "Aetna", "Medicare"]
+      insuranceAccepted: ["Star Health", "HDFC ERGO", "Apollo Munich"]
     },
     {
       id: "2",
-      name: "Dr. James Thompson",
+      name: "Dr. Raj Patel",
       specialty: "Family Medicine",
-      address: "456 Health Blvd, City Name",
+      address: "456 Health Blvd, Banjara Hills, Hyderabad",
       distance: "0.8",
-      phone: "(555) 987-6543",
+      phone: "+91 87654 32109",
       rating: 4.6,
       availableDate: "Today",
       timings: "8:00 AM - 4:00 PM",
       availableSlots: ["9:15 AM", "11:00 AM", "3:30 PM"],
-      insuranceAccepted: ["UnitedHealth", "Cigna", "Medicare"]
+      insuranceAccepted: ["Bajaj Allianz", "ICICI Lombard", "Max Bupa"]
     },
     {
       id: "3",
-      name: "Dr. Maria Gonzalez",
+      name: "Dr. Meera Reddy",
       specialty: "Neurologist",
-      address: "789 Wellness Ave, City Name",
+      address: "789 Wellness Ave, Madhapur, Hyderabad",
       distance: "2.3",
-      phone: "(555) 456-7890",
+      phone: "+91 76543 21098",
       rating: 4.9,
-      availableDate: "May 5",
+      availableDate: "May 20, 2025",
       timings: "10:00 AM - 6:00 PM",
       availableSlots: ["10:30 AM", "1:45 PM", "5:15 PM"],
-      insuranceAccepted: ["Aetna", "Cigna", "Humana"]
+      insuranceAccepted: ["Aditya Birla Health", "ICICI Lombard", "HDFC ERGO"]
     },
     {
       id: "4",
-      name: "Dr. Robert Chang",
+      name: "Dr. Arjun Malhotra",
       specialty: "Dermatologist",
-      address: "234 Healthcare Pkwy, City Name",
+      address: "234 Healthcare Pkwy, Kondapur, Hyderabad",
       distance: "3.1",
-      phone: "(555) 234-5678",
+      phone: "+91 65432 10987",
       rating: 4.7,
-      availableDate: "May 3",
+      availableDate: "May 18, 2025",
       timings: "9:00 AM - 5:00 PM",
       availableSlots: ["11:30 AM", "2:00 PM", "4:00 PM"],
-      insuranceAccepted: ["BlueCross", "UnitedHealth", "Medicare"]
+      insuranceAccepted: ["Star Health", "Bajaj Allianz", "Max Bupa"]
     },
     {
       id: "5",
-      name: "Dr. Sarah Peterson",
+      name: "Dr. Ananya Desai",
       specialty: "Pediatrician",
-      address: "567 Children's Health Blvd, City Name",
+      address: "567 Children's Health Center, Gachibowli, Hyderabad",
       distance: "1.5",
-      phone: "(555) 789-0123",
+      phone: "+91 54321 09876",
       rating: 4.9,
       availableDate: "Today",
       timings: "8:30 AM - 4:30 PM",
       availableSlots: ["9:00 AM", "11:30 AM", "2:00 PM", "3:45 PM"],
-      insuranceAccepted: ["BlueCross", "Aetna", "UnitedHealth"]
+      insuranceAccepted: ["Star Health", "Aditya Birla Health", "Bajaj Allianz"]
     },
     {
       id: "6",
-      name: "Dr. David Kim",
+      name: "Dr. Rahul Verma",
       specialty: "Orthopedic Surgeon",
-      address: "890 Bone & Joint Way, City Name",
+      address: "890 Bone & Joint Center, Begumpet, Hyderabad",
       distance: "2.7",
-      phone: "(555) 321-6547",
+      phone: "+91 43210 98765",
       rating: 4.8,
-      availableDate: "May 4",
+      availableDate: "May 19, 2025",
       timings: "9:00 AM - 5:00 PM",
       availableSlots: ["10:15 AM", "1:30 PM", "3:45 PM"],
-      insuranceAccepted: ["Medicare", "BlueCross", "Cigna"]
+      insuranceAccepted: ["Max Bupa", "Star Health", "ICICI Lombard"]
     },
     {
       id: "7",
-      name: "Dr. Jennifer Adams",
+      name: "Dr. Kavita Iyer",
       specialty: "OB/GYN",
-      address: "123 Women's Health Center, City Name",
+      address: "123 Women's Health Center, Ameerpet, Hyderabad",
       distance: "1.9",
-      phone: "(555) 987-1234",
+      phone: "+91 32109 87654",
       rating: 4.8,
       availableDate: "Tomorrow",
       timings: "8:00 AM - 4:00 PM",
       availableSlots: ["8:30 AM", "10:45 AM", "2:15 PM"],
-      insuranceAccepted: ["Aetna", "UnitedHealth", "Humana"]
+      insuranceAccepted: ["Aditya Birla Health", "Bajaj Allianz", "HDFC ERGO"]
     },
     {
       id: "8",
-      name: "Dr. Michael Rodriguez",
+      name: "Dr. Vivek Agarwal",
       specialty: "Family Medicine",
-      address: "456 Primary Care Ave, City Name",
+      address: "456 Primary Care Center, Himayatnagar, Hyderabad",
       distance: "0.5",
-      phone: "(555) 456-7890",
+      phone: "+91 21098 76543",
       rating: 4.7,
       availableDate: "Today",
       timings: "9:00 AM - 6:00 PM",
       availableSlots: ["9:30 AM", "11:45 AM", "4:30 PM"],
-      insuranceAccepted: ["Medicare", "Humana", "BlueCross"]
+      insuranceAccepted: ["Max Bupa", "HDFC ERGO", "Star Health"]
     }
   ]);
 
@@ -165,7 +164,7 @@ export default function FindDoctors() {
     const matchesAvailability = availability === "all" || 
       (availability === "today" && doctor.availableDate === "Today") ||
       (availability === "tomorrow" && doctor.availableDate === "Tomorrow") ||
-      (availability === "this-week" && ["Today", "Tomorrow", "May 3", "May 4", "May 5"].includes(doctor.availableDate));
+      (availability === "this-week" && ["Today", "Tomorrow", "May 18, 2025", "May 19, 2025", "May 20, 2025"].includes(doctor.availableDate));
     
     // Filter by distance
     const matchesDistance = maxDistance === "all" || 

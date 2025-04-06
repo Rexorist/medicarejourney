@@ -19,25 +19,25 @@ export default function Consultations() {
   const [consultations, setConsultations] = useState<Consultation[]>([
     {
       id: "1",
-      doctor: "Dr. Sarah Johnson",
+      doctor: "Dr. Aishwarya Singh",
       specialty: "Cardiology",
-      date: "May 15, 2024",
+      date: "May 15, 2025",
       time: "10:30 AM",
       type: "video"
     },
     {
       id: "2",
-      doctor: "Dr. Michael Chen",
+      doctor: "Dr. Ravi Kumar",
       specialty: "Family Medicine",
-      date: "May 22, 2024",
+      date: "May 22, 2025",
       time: "2:45 PM",
       type: "in-person"
     },
     {
       id: "3",
-      doctor: "Dr. Lisa Rodriguez",
+      doctor: "Dr. Neha Gupta",
       specialty: "Dermatology",
-      date: "June 3, 2024",
+      date: "June 3, 2025",
       time: "11:15 AM",
       type: "chat"
     }
