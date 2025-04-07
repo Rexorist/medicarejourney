@@ -12,6 +12,7 @@ import FamilyHealth from "./pages/FamilyHealth";
 import Consultations from "./pages/Consultations";
 import Medications from "./pages/Medications";
 import FindDoctors from "./pages/FindDoctors";
+import LabReports from "./pages/LabReports";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/family-health" element={<ProtectedRoute><FamilyHealth /></ProtectedRoute>} />
             <Route path="/consultations" element={<ProtectedRoute><Consultations /></ProtectedRoute>} />
             <Route path="/medications" element={<ProtectedRoute><Medications /></ProtectedRoute>} />
+            <Route path="/lab-reports" element={<ProtectedRoute><LabReports /></ProtectedRoute>} />
             <Route path="/find-doctors" element={<ProtectedRoute><FindDoctors /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>

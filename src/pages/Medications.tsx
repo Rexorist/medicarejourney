@@ -1,6 +1,6 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Calendar, Clock, AlertCircle, Pill, PlusCircle, Tablet, Bell, Check, RotateCw, CalendarClock } from "lucide-react";
+import { Calendar, Clock, AlertCircle, Pill, Tablet, Bell, Check, RotateCw, CalendarClock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { differenceInDays, parse, isBefore } from "date-fns";
+import { AddMedicationDialog } from "@/components/medications/AddMedicationDialog";
 
 interface Medication {
   id: string;
@@ -136,11 +137,24 @@ export default function Medications() {
     });
   };
 
-  const handleAddMedication = () => {
-    toast({
-      title: "Feature coming soon",
-      description: "The medication management feature is under development."
-    });
+  const handleAddMedication = (newMedication: {
+    name: string;
+    dosage: string;
+    frequency: string;
+    purpose: string;
+    refillDate?: string;
+    expiryDate?: string;
+    instructions?: string;
+  }) => {
+    const medication: Medication = {
+      id: Date.now().toString(),
+      ...newMedication,
+      dispenserConnected: isDispenserConnected,
+      status: 'upcoming',
+      guardianAlert: false
+    };
+    
+    setMedications([...medications, medication]);
   };
 
   const toggleDispenserConnection = () => {
@@ -249,10 +263,7 @@ export default function Medications() {
             <p className="text-muted-foreground">Manage your medications and smart dispenser</p>
           </div>
           <div className="flex flex-col sm:flex-row gap-2">
-            <Button onClick={handleAddMedication} className="flex items-center gap-2">
-              <PlusCircle size={16} />
-              <span>Add Medication</span>
-            </Button>
+            <AddMedicationDialog onAddMedication={handleAddMedication} />
             <Button onClick={handleSyncDispenser} variant="outline" className="flex items-center gap-2">
               <RotateCw size={16} />
               <span>Sync Dispenser</span>
@@ -428,7 +439,9 @@ export default function Medications() {
           <Card>
             <CardContent className="p-6 text-center">
               <p className="text-lg text-gray-500">No medications added yet</p>
-              <Button className="mt-4" onClick={handleAddMedication}>Add Your First Medication</Button>
+              <AddMedicationDialog onAddMedication={handleAddMedication}>
+                <Button className="mt-4">Add Your First Medication</Button>
+              </AddMedicationDialog>
             </CardContent>
           </Card>
         ) : (
