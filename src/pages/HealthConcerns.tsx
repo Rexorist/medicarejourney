@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { 
@@ -22,7 +21,10 @@ import {
   Calendar,
   Clock,
   Phone,
-  Star
+  Star,
+  Stethoscope,
+  Pill,
+  Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -39,6 +41,8 @@ import {
   CommandItem,
   CommandList
 } from "@/components/ui/command";
+import { useNavigate } from "react-router-dom";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Enhanced symptoms database with more specific responses and precautions
 const symptomsDatabase = {
@@ -313,13 +317,15 @@ export default function HealthConcerns() {
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
   const [availabilityFilter, setAvailabilityFilter] = useState<string | null>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
 
-  // Function to analyze health concerns with improved matching
+  // Function to analyze health concerns with improved multi-symptom detection
   const handleSubmitConcern = () => {
-    if (!concern) {
+    if (!concern && selectedSymptoms.length === 0) {
       toast({
         title: "Error",
-        description: "Please enter your health concern.",
+        description: "Please enter your health concern or select symptoms.",
         variant: "destructive",
       });
       return;
@@ -327,14 +333,23 @@ export default function HealthConcerns() {
     
     setLoading(true);
     
-    // Smart analysis with improved keyword matching
+    // Smart analysis with improved multiple keyword matching
     setTimeout(() => {
       const lowerCaseConcern = concern.toLowerCase();
-      let foundAnalysis = null;
-      let highestMatchScore = 0;
-      let bestMatch = null;
+      const matchedSymptoms: Record<string, { score: number, data: any }> = {};
       
-      // Improved symptom matching algorithm
+      // First check for explicitly selected symptoms
+      selectedSymptoms.forEach(symptom => {
+        const symptomKey = symptom.toLowerCase();
+        if (symptomsDatabase[symptomKey as keyof typeof symptomsDatabase]) {
+          matchedSymptoms[symptomKey] = {
+            score: 1, // Explicitly selected symptoms get highest score
+            data: symptomsDatabase[symptomKey as keyof typeof symptomsDatabase]
+          };
+        }
+      });
+      
+      // Then check for symptoms mentioned in the text
       for (const symptom in symptomsDatabase) {
         // Check if symptom appears in concern
         if (lowerCaseConcern.includes(symptom)) {
@@ -342,69 +357,115 @@ export default function HealthConcerns() {
           const occurrenceScore = (lowerCaseConcern.match(new RegExp(symptom, 'g')) || []).length;
           const matchScore = keywordScore * occurrenceScore;
           
-          if (matchScore > highestMatchScore) {
-            highestMatchScore = matchScore;
-            bestMatch = symptom;
+          // Only add if not already explicitly selected
+          if (!matchedSymptoms[symptom]) {
+            matchedSymptoms[symptom] = {
+              score: matchScore,
+              data: symptomsDatabase[symptom as keyof typeof symptomsDatabase]
+            };
           }
         }
       }
       
-      // Use best matching symptom if found
-      if (bestMatch) {
-        foundAnalysis = symptomsDatabase[bestMatch as keyof typeof symptomsDatabase];
-      }
-      
-      // Fallback to generic response if no match found
-      if (!foundAnalysis) {
+      // No matches found - try partial matching
+      if (Object.keys(matchedSymptoms).length === 0 && concern) {
         const possibleSymptoms = Object.keys(symptomsDatabase).filter(symptom => 
           lowerCaseConcern.includes(symptom.substring(0, 4)) || 
           lowerCaseConcern.includes(symptom.substring(0, 3))
         );
         
-        if (possibleSymptoms.length > 0) {
-          // Use closest partial match
-          foundAnalysis = symptomsDatabase[possibleSymptoms[0] as keyof typeof symptomsDatabase];
-        } else {
-          // Generic response as last resort
-          foundAnalysis = {
-            analysis: "Based on your description, we recommend consulting with a healthcare professional for a proper diagnosis. Your symptoms could be related to various conditions, and a doctor can provide appropriate guidance after examination.",
-            treatment: "It's best to consult with a healthcare professional before attempting any self-treatment.",
-            precautions: [
-              "Monitor your symptoms and document any changes",
-              "Get adequate rest and stay hydrated",
-              "Avoid self-medication without professional advice",
-              "Consider consulting with a primary care physician"
-            ],
-            whenToSeeDoctor: "If symptoms are severe, persistent, or worsening, please seek medical attention promptly."
+        possibleSymptoms.forEach(symptom => {
+          matchedSymptoms[symptom] = {
+            score: 0.5, // Partial matches get lower scores
+            data: symptomsDatabase[symptom as keyof typeof symptomsDatabase]
           };
+        });
+      }
+      
+      // If we still have no matches, provide a generic response
+      if (Object.keys(matchedSymptoms).length === 0) {
+        // Generic response as last resort
+        setAnalysis({
+          detectedSymptoms: [],
+          analysis: "Based on your description, we recommend consulting with a healthcare professional for a proper diagnosis. Your symptoms could be related to various conditions, and a doctor can provide appropriate guidance after examination.",
+          treatment: "It's best to consult with a healthcare professional before attempting any self-treatment.",
+          precautions: [
+            "Monitor your symptoms and document any changes",
+            "Get adequate rest and stay hydrated",
+            "Avoid self-medication without professional advice",
+            "Consider consulting with a primary care physician"
+          ],
+          whenToSeeDoctor: "If symptoms are severe, persistent, or worsening, please seek medical attention promptly.",
+          recommendedSpecialty: "Family Medicine"
+        });
+      } else {
+        // We have matches! Combine the analysis
+        const sortedSymptoms = Object.entries(matchedSymptoms)
+          .sort((a, b) => b[1].score - a[1].score);
+        
+        const primarySymptom = sortedSymptoms[0][0]; // Highest scoring symptom
+        const primaryData = sortedSymptoms[0][1].data;
+        
+        // Map specialty recommendations
+        const specialtyRecommendations = {
+          "headache": "Neurology",
+          "stomachache": "Gastroenterology",
+          "back pain": "Orthopedics",
+          "cough": "Internal Medicine",
+          "fever": "Family Medicine",
+          "fatigue": "Internal Medicine",
+          "joint pain": "Orthopedics",
+          "rash": "Dermatology",
+          "dizziness": "Neurology",
+          "shortness of breath": "Pulmonology"
+        };
+        
+        // For multiple symptoms, create a combined analysis
+        if (sortedSymptoms.length > 1) {
+          const detectedSymptoms = sortedSymptoms.map(s => s[0]);
+          const allPrecautions = new Set<string>();
+          
+          // Combine precautions from all detected symptoms
+          sortedSymptoms.forEach(([_, { data }]) => {
+            data.precautions.forEach((p: string) => allPrecautions.add(p));
+          });
+          
+          // Determine specialty based on primary symptom or combination
+          const recommendedSpecialty = specialtyRecommendations[primarySymptom as keyof typeof specialtyRecommendations] || "Family Medicine";
+          
+          setAnalysis({
+            detectedSymptoms,
+            analysis: `Based on your description, we've identified multiple symptoms including ${detectedSymptoms.join(', ')}. ${primaryData.analysis}`,
+            treatment: `For your combination of symptoms: ${primaryData.treatment} However, for multiple symptoms, it's best to consult with a healthcare professional for personalized advice.`,
+            precautions: Array.from(allPrecautions),
+            whenToSeeDoctor: "With multiple symptoms, we recommend consulting a healthcare provider soon for proper evaluation.",
+            recommendedSpecialty
+          });
+        } else {
+          // Single symptom analysis
+          const recommendedSpecialty = specialtyRecommendations[primarySymptom as keyof typeof specialtyRecommendations] || "Family Medicine";
+          
+          setAnalysis({
+            detectedSymptoms: [primarySymptom],
+            analysis: primaryData.analysis,
+            treatment: primaryData.treatment,
+            precautions: primaryData.precautions,
+            whenToSeeDoctor: primaryData.whenToSeeDoctor,
+            recommendedSpecialty
+          });
         }
       }
       
-      // Recommend specialty based on symptoms
-      const specialtyRecommendations = {
-        "headache": "Neurology",
-        "stomachache": "Gastroenterology",
-        "back pain": "Orthopedics",
-        "cough": "Internal Medicine",
-        "fever": "Family Medicine",
-        "fatigue": "Internal Medicine",
-        "joint pain": "Orthopedics",
-        "rash": "Dermatology",
-        "dizziness": "Neurology",
-        "shortness of breath": "Pulmonology"
-      };
-      
-      const recommendedSpecialty = bestMatch 
-        ? specialtyRecommendations[bestMatch as keyof typeof specialtyRecommendations] || "Family Medicine"
-        : "Family Medicine";
-      
-      foundAnalysis.recommendedSpecialty = recommendedSpecialty;
-      
-      setAnalysis(foundAnalysis);
       setLoading(false);
       
       // Auto-load doctors based on recommended specialty
-      handleFindDoctors(recommendedSpecialty);
+      if (analysis?.recommendedSpecialty) {
+        handleFindDoctors(analysis.recommendedSpecialty);
+      } else if (matchedSymptoms[Object.keys(matchedSymptoms)[0]]?.data.recommendedSpecialty) {
+        handleFindDoctors(matchedSymptoms[Object.keys(matchedSymptoms)[0]].data.recommendedSpecialty);
+      } else {
+        handleFindDoctors("Family Medicine");
+      }
     }, 1500);
   };
   
@@ -427,6 +488,7 @@ export default function HealthConcerns() {
     if (!positive) {
       setAnalysis(null);
       setConcern("");
+      setSelectedSymptoms([]);
     }
   };
 
@@ -551,7 +613,19 @@ export default function HealthConcerns() {
   ];
 
   const handleQuickSymptomSelect = (symptom: string) => {
-    setConcern(symptom.toLowerCase());
+    // If symptom is already selected, deselect it
+    if (selectedSymptoms.includes(symptom.toLowerCase())) {
+      setSelectedSymptoms(selectedSymptoms.filter(s => s !== symptom.toLowerCase()));
+    } else {
+      // Otherwise add it to selected symptoms
+      setSelectedSymptoms([...selectedSymptoms, symptom.toLowerCase()]);
+    }
+  };
+
+  // Clear all selections
+  const handleClearSelections = () => {
+    setSelectedSymptoms([]);
+    setConcern("");
   };
 
   return (
@@ -570,35 +644,53 @@ export default function HealthConcerns() {
           
           <Card className="backdrop-blur-sm bg-background/70 shadow-lg border border-opacity-40 hover:border-primary/40 transition-all duration-300">
             <CardHeader>
-              <CardTitle>Describe Your Health Concern</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Stethoscope className="h-5 w-5 text-medical-blue" />
+                Describe Your Health Concern
+              </CardTitle>
               <CardDescription>
                 Provide detailed information about your symptoms for more accurate analysis
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               <Textarea 
                 placeholder="Describe your symptoms, when they started, their severity, and any factors that make them better or worse..." 
                 className="min-h-[120px]"
                 value={concern}
                 onChange={(e) => setConcern(e.target.value)}
               />
-              <div className="flex flex-wrap gap-2 mt-4">
-                {commonSymptoms.map((symptom) => (
-                  <Badge 
-                    key={symptom} 
-                    variant="outline" 
-                    className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-                    onClick={() => handleQuickSymptomSelect(symptom)}
-                  >
-                    {symptom}
-                  </Badge>
-                ))}
+              
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-medium">Select Symptoms</h3>
+                  {selectedSymptoms.length > 0 && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={handleClearSelections}
+                    >
+                      Clear all
+                    </Button>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {commonSymptoms.map((symptom) => (
+                    <Badge 
+                      key={symptom} 
+                      variant={selectedSymptoms.includes(symptom.toLowerCase()) ? "default" : "outline"} 
+                      className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                      onClick={() => handleQuickSymptomSelect(symptom)}
+                    >
+                      {symptom}
+                    </Badge>
+                  ))}
+                </div>
               </div>
             </CardContent>
             <CardFooter className="flex flex-col sm:flex-row gap-2 sm:gap-4">
               <Button 
                 onClick={handleSubmitConcern} 
-                disabled={loading || !concern}
+                disabled={loading || (concern === "" && selectedSymptoms.length === 0)}
                 className="w-full sm:w-auto"
                 variant="gradient"
               >
@@ -609,6 +701,7 @@ export default function HealthConcerns() {
                   </>
                 ) : (
                   <>
+                    <Sparkles className="mr-2 h-4 w-4" />
                     Analyze with AI
                   </>
                 )}
@@ -631,6 +724,12 @@ export default function HealthConcerns() {
                   <span className="h-3 w-3 rounded-full bg-primary animate-pulse-light" />
                   AI Health Analysis
                 </CardTitle>
+                {analysis.detectedSymptoms && analysis.detectedSymptoms.length > 0 && (
+                  <CardDescription>
+                    Detected symptoms: {analysis.detectedSymptoms.map((s: string) => 
+                      s.charAt(0).toUpperCase() + s.slice(1)).join(', ')}
+                  </CardDescription>
+                )}
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
@@ -704,225 +803,11 @@ export default function HealthConcerns() {
           {showDoctors && (
             <Card className="backdrop-blur-sm bg-background/80 shadow-lg">
               <CardHeader>
-                <CardTitle>Doctors Near You</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Pill className="h-5 w-5 text-medical-blue" />
+                  Doctors Near You
+                </CardTitle>
                 <CardDescription>
                   {filteredDoctors.length} healthcare providers found based on your criteria
                 </CardDescription>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-4">
-                  <Button 
-                    variant={selectedSpecialty === null ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedSpecialty(null)}
-                  >
-                    All Specialties
-                  </Button>
-                  {specialties.map(specialty => (
-                    <Button 
-                      key={specialty}
-                      variant={selectedSpecialty === specialty ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setSelectedSpecialty(specialty)}
-                    >
-                      {specialty}
-                    </Button>
-                  ))}
-                </div>
-                <div className="flex gap-2 mt-3">
-                  <Button 
-                    variant={availabilityFilter === null ? "secondary" : "outline"}
-                    size="sm"
-                    onClick={() => setAvailabilityFilter(null)}
-                  >
-                    Any Time
-                  </Button>
-                  <Button 
-                    variant={availabilityFilter === "today" ? "secondary" : "outline"}
-                    size="sm"
-                    onClick={() => setAvailabilityFilter("today")}
-                  >
-                    Today
-                  </Button>
-                  <Button 
-                    variant={availabilityFilter === "tomorrow" ? "secondary" : "outline"}
-                    size="sm"
-                    onClick={() => setAvailabilityFilter("tomorrow")}
-                  >
-                    Tomorrow
-                  </Button>
-                  <Button 
-                    variant={availabilityFilter === "this-week" ? "secondary" : "outline"}
-                    size="sm"
-                    onClick={() => setAvailabilityFilter("this-week")}
-                  >
-                    This Week
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {filteredDoctors.length === 0 && (
-                    <p className="text-center py-8 text-muted-foreground">
-                      No doctors found with the selected criteria
-                    </p>
-                  )}
-                  
-                  {filteredDoctors.map((doctor) => (
-                    <div key={doctor.id} className="flex flex-col md:flex-row md:items-start gap-4 p-4 rounded-lg border bg-card/40 backdrop-blur-xs hover:shadow-md transition-all">
-                      <div className="h-16 w-16 rounded-full overflow-hidden bg-muted flex-shrink-0 mx-auto md:mx-0">
-                        <img src={doctor.image} alt={doctor.name} className="h-full w-full object-cover" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                          <div>
-                            <h3 className="font-medium text-center md:text-left">{doctor.name}</h3>
-                            <p className="text-sm text-medical-blue text-center md:text-left">{doctor.specialty}</p>
-                          </div>
-                          <Badge variant="outline" className="self-center md:self-start">
-                            {doctor.distance} mile{doctor.distance !== 1 ? 's' : ''} away
-                          </Badge>
-                        </div>
-                        
-                        <div className="grid gap-3 mt-3">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                            <div className="flex items-start gap-2">
-                              <MapPin className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
-                              <span>{doctor.location}</span>
-                            </div>
-                            <div className="flex items-start gap-2">
-                              <Phone className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
-                              <span>{doctor.phone}</span>
-                            </div>
-                            <div className="flex items-start gap-2">
-                              <Clock className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
-                              <span>{doctor.timings}</span>
-                            </div>
-                            <div className="flex items-start gap-2">
-                              <Calendar className="h-4 w-4 text-muted-foreground mt-1 flex-shrink-0" />
-                              <span className="text-green-600 font-medium">Next available: {doctor.availability}</span>
-                            </div>
-                            <div className="flex items-start gap-2">
-                              <Star className="h-4 w-4 text-yellow-500 mt-1 flex-shrink-0" />
-                              <span>{doctor.rating.toFixed(1)} out of 5</span>
-                            </div>
-                            <div className="col-span-1 md:col-span-2">
-                              <span className="font-medium">Available slots:</span>
-                              <div className="flex flex-wrap gap-1 mt-1">
-                                {doctor.availableSlots.map((slot, index) => (
-                                  <Badge key={index} variant="secondary" className="cursor-pointer hover:bg-secondary/80">
-                                    {slot}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                          
-                          <Button 
-                            className="mt-2" 
-                            onClick={() => handleScheduleAppointment(doctor, doctor.availableSlots[0])}
-                            variant="gradient"
-                          >
-                            Book Appointment
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-        
-        <div className="w-full md:w-[350px] space-y-6">
-          <Card className="backdrop-blur-sm bg-background/70 shadow-md border border-opacity-40">
-            <CardHeader>
-              <CardTitle className="text-lg">Recent Health Concerns</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {recentConcerns.map((item) => (
-                <div key={item.id} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <AlertCircle className={`h-4 w-4 ${item.status === 'Active' ? 'text-medical-red' : 'text-medical-green'}`} />
-                      <span className="font-medium">{item.title}</span>
-                    </div>
-                    <span className="text-xs text-muted-foreground">{item.date}</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">{item.description}</p>
-                  <Separator />
-                </div>
-              ))}
-            </CardContent>
-            <CardFooter>
-              <Button variant="outline" className="w-full">
-                <Plus className="h-4 w-4 mr-2" /> Add New Concern
-              </Button>
-            </CardFooter>
-          </Card>
-          
-          <Card className="backdrop-blur-sm bg-background/70 shadow-md border border-opacity-40">
-            <CardHeader>
-              <CardTitle className="text-lg">Quick Symptom Search</CardTitle>
-              <CardDescription>Search for health information</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Input 
-                  placeholder="Search symptoms..." 
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <Button variant="ghost" size="icon">
-                  <Search className="h-4 w-4" />
-                </Button>
-              </div>
-              
-              <div>
-                <h3 className="text-sm font-medium mb-2">Popular searches</h3>
-                <div className="flex flex-wrap gap-2">
-                  {["Headache", "Fever", "Cough", "Back pain", "Allergies", "Blood pressure"].map((term) => (
-                    <Button 
-                      key={term} 
-                      variant="outline" 
-                      size="sm" 
-                      className="text-xs"
-                      onClick={() => setSearchTerm(term)}
-                    >
-                      {term}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="backdrop-blur-sm bg-background/70 shadow-md border border-opacity-40">
-            <CardHeader>
-              <CardTitle className="text-lg">Health Tips</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <h3 className="text-sm font-medium">Preventive Care</h3>
-                <p className="text-xs text-muted-foreground">
-                  Regular check-ups can help detect potential health issues before they become serious. Schedule your annual exam today.
-                </p>
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-sm font-medium">Mental Wellness</h3>
-                <p className="text-xs text-muted-foreground">
-                  Taking time for self-care activities like meditation, reading, or walking can improve your mental well-being.
-                </p>
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-sm font-medium">Nutrition</h3>
-                <p className="text-xs text-muted-foreground">
-                  Eating a balanced diet rich in fruits, vegetables, and whole grains provides essential nutrients for optimal health.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </AppLayout>
-  );
-}
+                <ScrollArea className="max-h-[120px] overflow-y-auto py-1">
